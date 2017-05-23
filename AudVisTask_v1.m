@@ -90,8 +90,8 @@ end
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
-hd.loFreq = 2500; %hz      312.5 |  625 | 1250 | 2500 |  5000
-hd.hiFreq = 15000; %hz     625   | 1250 | 2500 | 5000 | 10000
+hd.loFreq = 5000; %hz      312.5 |  625 | 1250 | 2500 |  5000
+hd.hiFreq = 20000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually random number between 0 and 10
 hd.trialDur = 2000; %ms
@@ -102,7 +102,7 @@ responsewindow = hd.trialDur; %time allowed to respond = trial duration, ms
 list{'Input'}{'responseWindow'} = responsewindow;
 
 % CREATE AUDIOPLAYER
-player = dotsPlayableWave();
+player = dotsPlayableWave_2Channel();
 player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
 player.intensity = 1;
@@ -517,7 +517,7 @@ if ~isempty(press)
     %get the number of tones played
     visualModes = list{'control'}{'visualModes'};
     coh_list = list{'control'}{'cohLevels'};
-    [~, ~, ~, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
+    [~, ~, ~, ~, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
     coh_list(counter), visualModes{counter});
     
     %calculate the percentage of time the subject waited to respond
@@ -537,7 +537,7 @@ if ~isempty(press)
     playedTones = freq{counter}(1:n);
     isLo = sum(playedTones == hd.loFreq);
     isHi = sum(playedTones == hd.hiFreq);
-    coh_played(counter) = isHi/numTones_played(counter);
+    coh_played(counter) = isHi/n;
     isH_played(counter) = isHi > isLo;
 else 
     rt = NaN;
@@ -626,12 +626,13 @@ visualModes = list{'control'}{'visualModes'};
 
 hd = list{'Stimulus'}{'header'};
 
-[waveform, f, h] = VisualTones(hd.loFreq, hd.hiFreq,...
+[waveform, full_stimulus, f, h] = VisualTones(hd.loFreq, hd.hiFreq,...
     coh_list(counter), visualModes{counter});
 
 %player information 
 player = list{'Stimulus'}{'player'};    
-player.waveform = waveform;
+player.wave = full_stimulus;
+%player.wave = waveform;
 player.prepareToPlay;
 player.play;
 

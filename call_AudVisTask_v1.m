@@ -4,7 +4,7 @@ clear;
 close all;
 topsDataLog.flushAllData();
 
-[task, list] = AudVisTask_v1(0);
+[task, list] = AudVisTask_v1(0); 
 task.run();
 
 %Post-Processing 
@@ -40,14 +40,14 @@ success = list{'Input'}{'corrects'};
 rt = list{'Input'}{'RT'};
 
 data_table = table((1:nTrials)',visualModes,cohLevels,coh_played,...
-    numTones_played,waveforms,isH,isH_played,choices,success,stimStart,...
+    numTones_played,isH,isH_played,choices,success,stimStart,...
     stimStop,responseTimeStamp,rt,'VariableNames',{'trialID','visualMode',...
-    'cohLevel','coh_played','numTones_played','waveform','isHigh',...
+    'cohLevel','coh_played','numTones_played','isHigh',...
     'playedHigh','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
 
-
-save([data_folder save_filename '_table.mat'], 'data_table', 'meta_data'); 
+%save([data_folder save_filename '_table.mat'], 'data_table', 'meta_data');
+writetable(data_table, strcat(save_filename,'.csv'));
 
 clear
 close all;
