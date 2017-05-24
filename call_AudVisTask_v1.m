@@ -4,6 +4,7 @@ clear;
 close all;
 topsDataLog.flushAllData();
 
+%dispInd = 0 for small screen, 1 for full screen, >1 for external monitors
 [task, list] = AudVisTask_v1(0); 
 task.run();
 

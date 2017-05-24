@@ -8,10 +8,10 @@ sc = dotsTheScreen.theObject;
 %dispInd = 0 for small screen, 1 for full screen, >1 for external monitors
 sc.reset('displayIndex', dispInd);
 
-%Call GetSecs just to load up the Mex files for getting time, so no delays later
+%Call GetSecs to load up the Mex files for getting time, so no delays later
 GetSecs;
 
-% get subject id
+%Subject ID and date/time info
 subj_id = input('Subject ID: ','s');
 cur_date = datestr(now,'yymmdd');
 cur_time = datestr(now,'HHMM');
@@ -19,9 +19,10 @@ cur_task = mfilename;
 save_filename = [cur_task '_' subj_id '_' cur_date '_' cur_time];
 %% Setting up a list structure
 
+%create list structure
 list = topsGroupedList(cur_task);
 
-% SUBJECT
+%Save subject/date/time info as meta data 
 list{'meta'}{'subjID'} = subj_id;
 list{'meta'}{'date'} = cur_date;
 list{'meta'}{'time'} = cur_time;
@@ -33,11 +34,11 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 4;
 % number of trials per visual mode
-block_rep = 1; %5 %50
-% possible visual values 
+block_rep = 1; %15 %50
+% possible visual values to select from
 vis_vals = {'None', 'Low', 'High', 'All'};
 
-%% Conditions for each trial
+%% Visual conditions for each trial
 
 taskConditions = topsConditions(cur_task);
 
@@ -46,20 +47,23 @@ taskConditions.addParameter(vis_parameter, vis_vals);
 likesVisMode = topsFoundation();
 taskConditions.addAssignment('visualMode', likesVisMode, '.', 'name');
 
-%nVis = length(vis_vals);
 nTrials = block_rep * block_size;
 visualModes = cell(nTrials, 1);
+%select each visual mode once in a random order
+%each mode will only be selected once per trial
 taskConditions.setPickingMethod('shuffledEach',1);
 
 keepGoing = true;
 counter = 0;
 while keepGoing
     taskConditions.run();
+    %add the visual modes in for the length of the block
     for k = counter + 1 : counter + block_rep
          visualModes{k} = likesVisMode.name;
-     end 
-    %visualModes{counter+1:counter+block_rep} = likesVisMode.name;
+    end 
+    %continue until task conditions are finished being selected
     keepGoing = ~taskConditions.isDone;
+    %increment by the size of the block
     counter = counter + block_rep;
 end 
 
@@ -70,30 +74,32 @@ list{'control'}{'visualModes'} = visualModes;
 
 cohLevels = zeros(nTrials, 1);
 
-%COUNTER
+%Create COUNTER object
 list{'Counter'}{'trial'} = 0;
 
+%possible coherences
 coherences = [0, .25, .5, .75, 1];
 
 for i = 1:nTrials
-    %randomly generate a coherence
+    %add coherence as a condition
     tmp_coh = topsConditions('coh');
     tmp_coh.addParameter('cohLevel', coherences);
     likesCohLevel = topsFoundation();
     tmp_coh.addAssignment('cohLevel', likesCohLevel, '.', 'name');
 
+    %randomly generate a coherence
     index = randsample(5,1);
     c = coherences(index);
     cohLevels(i) = c;
-
 end 
+
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
 hd.loFreq = 5000; %hz      312.5 |  625 | 1250 | 2500 |  5000
 hd.hiFreq = 20000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
-hd.toneSOA = 10; %ms, actually random number between 0 and 10
+hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
 hd.trialDur = 2000; %ms
 hd.fs = 44100; %samples/sec
 
@@ -107,8 +113,8 @@ player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
 player.intensity = 3;
 %% Time Variables
-iti = 1; %s
-list{'timing'}{'intertrial'} = iti; %intertrial interval
+iti = 1; %seconds
+list{'timing'}{'intertrial'} = iti; %intertrial interval, between tones
 %% Input Settings
 
 % Set up gamepad object
@@ -202,17 +208,19 @@ list{'Timestamps'}{'stim_start'} = zeros(nTrials,1);
 list{'Timestamps'}{'stim_stop'} = zeros(nTrials,1);
 list{'Timestamps'}{'choices'} = zeros(nTrials,1);
 
-%INPUT
+%INPUT INFORMATION
 list{'Input'}{'choices'} = zeros(nTrials,1);
 list{'Input'}{'corrects'} = zeros(nTrials,1);
 list{'Input'}{'RT'} = zeros(nTrials,1);
 %% Graphics
 
+%Define colors for targets
 list{'Graphics'}{'gray'} = [0.5 0.5 0.5];
 list{'Graphics'}{'red'} = [0.75 0.25 0.1];
 list{'Graphics'}{'green'} = [.25 0.75 0.1];
 
 %Text prompts
+%Low pitch label (right side)
 lowlabel = dotsDrawableText();
 lowlabel.string = 'Low';
 lowlabel.fontSize = 36;
@@ -221,6 +229,7 @@ lowlabel.isVisible = false;
 lowlabel.x = 5;
 lowlabel.y = 3;
 
+%High pitch label (left side)
 highlabel = dotsDrawableText();
 highlabel.string = 'High';
 highlabel.fontSize = 36;
@@ -304,6 +313,7 @@ trialCalls = topsCallList();
 trialCalls.addCall({@read, ui}, 'read input');
 list{'control'}{'trial calls'} = trialCalls;
 %% State Machine
+
 show = @(index) ensemble.setObjectProperty('isVisible', true, index); %show asset
 hide = @(index) ensemble.setObjectProperty('isVisible', false, index); %hide asset
 
@@ -376,286 +386,294 @@ task.addChild(endTree);
 end
 
 %% Accessory Functions
+
 function startEndTask(list)
-ensemble = list{'Graphics'}{'ensemble'};
+    ensemble = list{'Graphics'}{'ensemble'};
 
-corrects = list{'Input'}{'corrects'};
-perf = 100*sum(corrects)/length(corrects);
+    corrects = list{'Input'}{'corrects'};
+    %calculate performance
+    perf = 100*sum(corrects)/length(corrects);
 
-% prepare text + performance
-ready2 = list{'Graphics'}{'ready2'};
-button2 = list{'Graphics'}{'button2'};
-tmp_str = ensemble.getObjectProperty('string', ready2);
-tmp_str = [tmp_str num2str(perf) ' %'];
-ensemble.setObjectProperty('string', tmp_str, ready2);
+    %prepare text + performance
+    ready2 = list{'Graphics'}{'ready2'};
+    button2 = list{'Graphics'}{'button2'};
+    tmp_str = ensemble.getObjectProperty('string', ready2);
+    tmp_str = [tmp_str num2str(perf) ' %'];
+    ensemble.setObjectProperty('string', tmp_str, ready2);
 
-% make visible
-ensemble.setObjectProperty('isVisible', true, ready2);
-ensemble.setObjectProperty('isVisible', true, button2);
+    %make visible
+    ensemble.setObjectProperty('isVisible', true, ready2);
+    ensemble.setObjectProperty('isVisible', true, button2);
 end
 
 function startTrial(list)
-%clear last trial data
-ui = list{'Input'}{'controller'};
-ui.flushData();
+    %clear last trial data
+    ui = list{'Input'}{'controller'};
+    ui.flushData();
 
-%increment counter to label trial
-counter = list{'Counter'}{'trial'};
-counter = counter + 1;
-list{'Counter'}{'trial'} = counter;
+    %increment counter to label trial
+    counter = list{'Counter'}{'trial'};
+    counter = counter + 1;
+    list{'Counter'}{'trial'} = counter;
 
-visualModes = list{'control'}{'visualModes'};
-ensemble = list{'Graphics'}{'ensemble'};
-low = list{'Graphics'}{'low'};
-high = list{'Graphics'}{'high'};
+    %set high and low labels to be visible 
+    ensemble = list{'Graphics'}{'ensemble'};
+    low = list{'Graphics'}{'low'};
+    high = list{'Graphics'}{'high'};
 
-ensemble.setObjectProperty('isVisible', true, low);
-ensemble.setObjectProperty('isVisible', true, high);
+    ensemble.setObjectProperty('isVisible', true, low);
+    ensemble.setObjectProperty('isVisible', true, high);
 end
 
 function finishTrial(list)
-%draw the target
-ensemble = list{'Graphics'}{'ensemble'};
-target = list{'Graphics'}{'target'};
-ensemble.setObjectProperty('isVisible', false, target);
+    %draw the target
+    ensemble = list{'Graphics'}{'ensemble'};
+    target = list{'Graphics'}{'target'};
+    ensemble.setObjectProperty('isVisible', false, target);
 
-%time between trials
-pause(list{'timing'}{'intertrial'});
+    %time between trials
+    pause(list{'timing'}{'intertrial'});
 end
 
 function showFeedback(list)
-%hide the fixation point and cursor
-ensemble = list{'Graphics'}{'ensemble'};
-target = list{'Graphics'}{'target'};
-counter = list{'Counter'}{'trial'};
+    %hide the fixation point and cursor
+    ensemble = list{'Graphics'}{'ensemble'};
+    target = list{'Graphics'}{'target'};
+    counter = list{'Counter'}{'trial'};
 
-% compare stimulus direction to choice direction
-isCorrect = list{'Input'}{'corrects'};
+    %compare stimulus direction to choice direction
+    isCorrect = list{'Input'}{'corrects'};
 
-% indicate correct or incorrect by coloring in the targets
-if isnan(isCorrect(counter))
-    ensemble.setObjectProperty('colors', list{'Graphics'}{'gray'}, target);
-    isCorrect(counter) = 0;
-elseif isCorrect(counter)
-    ensemble.setObjectProperty('colors', list{'Graphics'}{'green'}, target);
-else
-    ensemble.setObjectProperty('colors', list{'Graphics'}{'red'}, target);
-end
+    %indicate correct or incorrect by coloring in the targets
+    if isnan(isCorrect(counter))
+        ensemble.setObjectProperty('colors', list{'Graphics'}{'gray'}, target);
+        isCorrect(counter) = 0;
+    elseif isCorrect(counter)
+        ensemble.setObjectProperty('colors', list{'Graphics'}{'green'}, target);
+    else
+        ensemble.setObjectProperty('colors', list{'Graphics'}{'red'}, target);
+    end
 
-list{'Input'}{'corrects'} = isCorrect;
+    list{'Input'}{'corrects'} = isCorrect;
 end
 
 function string = waitForChoiceKey(list)
-%Get list items
-counter = list{'Counter'}{'trial'};
-ensemble = list{'Graphics'}{'ensemble'};
-target = list{'Graphics'}{'target'};
-ui = list{'Input'}{'controller'};
-player = list{'Stimulus'}{'player'};
-freq = list{'Stimulus'}{'freq'};
-hd = list{'Stimulus'}{'header'};
-stim_start = list{'Timestamps'}{'stim_start'};
-responsewindow = list{'Input'}{'responseWindow'};
+    %Get list items
+    counter = list{'Counter'}{'trial'};
+    ensemble = list{'Graphics'}{'ensemble'};
+    target = list{'Graphics'}{'target'};
+    ui = list{'Input'}{'controller'};
+    player = list{'Stimulus'}{'player'};
+    freq = list{'Stimulus'}{'freq'};
+    hd = list{'Stimulus'}{'header'};
+    stim_start = list{'Timestamps'}{'stim_start'};
+    responsewindow = list{'Input'}{'responseWindow'};
+    choices = list{'Input'}{'choices'};
 
-choices = list{'Input'}{'choices'};
+    % whether it's a high-freq trial
+    isH = list{'Stimulus'}{'isH'}; 
+    isH_played = list{'Stimulus'}{'isH_played'};
+    coh_played = list{'Stimulus'}{'coh_played'};
+    numTones_played = list{'Stimulus'}{'numTones_played'};
 
-% whether it's a high-freq trial
-isH = list{'Stimulus'}{'isH'}; 
-isH_played = list{'Stimulus'}{'isH_played'};
-coh_played = list{'Stimulus'}{'coh_played'};
-numTones_played = list{'Stimulus'}{'numTones_played'};
+    %clear existing data 
+    ui.flushData 
 
-%clear existing data 
-ui.flushData 
-
-%initialize variable 
-press = '';
-
-%wait for keypress
-%start timer 
-tic 
-while ~strcmp(press, 'left') && ~strcmp(press, 'right')
-    %Break loop if responsewindow time expires and move to next trial
-    if toc > responsewindow 
-        choice = NaN;
-        timestamp = NaN;
-        break
-    end 
-    
-    %Check for button press 
+    %initialize variable 
     press = '';
-    read(ui);
-    [~, ~, eventname, ~] = ui.getHappeningEvent();
-    events = cell(length(coh_played), 1);
-    
-    if ~isempty(eventname) && length(eventname) == 1
-        press = eventname;
-        events(counter) = press;
-        %stop the stimulus once a response is detected 
-        if ~strcmp(events{counter}, 'continue')
-            player.stop;
-        end
-        
-        %get the timestamp of the stimulus stop time 
-        stim_stop = list{'Timestamps'}{'stim_stop'};
-        stim_stop(counter) = player.stopTime;
-        list{'Timestamps'}{'stim_stop'} = stim_stop;
-    end 
-end
 
-%Get intertrial interval
-iti = list{'timing'}{'intertrial'};
+    %wait for keypress
+    %start timer 
+    tic 
+    while ~strcmp(press, 'left') && ~strcmp(press, 'right')
+        %Break loop if responsewindow time expires and move to next trial
+        if toc > responsewindow 
+            choice = NaN;
+            timestamp = NaN;
+            break
+        end 
 
-%Get timestamp of button press time 
-if ~isempty(press)
-    timestamp = ui.history;
-    %to ensure timestamp from a pressed key/button
-    timestamp = timestamp(timestamp(:, 2) > 1, :);
-    timestamp = timestamp(end);
-    
-    %calculate reaction time 
-    rt = (timestamp - stim_start(counter)) * 1000; %ms
-    %record current choice 
-    cur_choice = press{1};
-    
-    %get the number of tones played
-    visualModes = list{'control'}{'visualModes'};
-    coh_list = list{'control'}{'cohLevels'};
-    [~, ~, ~, ~, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
-    coh_list(counter), visualModes{counter});
-    
-    %calculate the percentage of time the subject waited to respond
-    p = rt/(hd.trialDur + iti);
-    %if response time is greater than trial duration, reset to 100%
-    if p > 1
-        p = 1;
-    end 
-    %use to calculate number of bursts played
-    numTones_played(counter) = floor(p * bursts);
-    
-    %to avoid index out of bounds errors with rounding 
-    n = numTones_played(counter);
-    if numTones_played(counter) > length(freq{counter})
-        n = length(freq{counter});
-    end 
-    playedTones = freq{counter}(1:n);
-    isLo = sum(playedTones == hd.loFreq);
-    isHi = sum(playedTones == hd.hiFreq);
-    coh_played(counter) = isHi/n;
-    isH_played(counter) = isHi > isLo;
-else 
-    rt = NaN;
-    cur_choice = NaN;
-end 
+        %Check for button press 
+        press = '';
+        read(ui);
+        [~, ~, eventname, ~] = ui.getHappeningEvent();
+        events = cell(length(coh_played), 1);
 
-cur_f = isH(counter) + 1; %isH : 2 - high | 1 - low
+        if ~isempty(eventname) && length(eventname) == 1
+            press = eventname;
+            events(counter) = press;
+            %stop the stimulus once a response is detected 
+            %avoid error by only stopping if left or right is pressed
+            if ~strcmp(events{counter}, 'continue')
+                player.stop;
+            end
 
-%Update choices list 
-timestamps = list{'Timestamps'}{'choices'};
-timestamps(counter) = timestamp;
-list{'Timestamps'}{'choices'} = timestamps;
+            %get the timestamp of the stimulus stop time 
+            stim_stop = list{'Timestamps'}{'stim_stop'};
+            stim_stop(counter) = player.stopTime;
+            list{'Timestamps'}{'stim_stop'} = stim_stop;
+        end 
+    end
 
-list{'Stimulus'}{'isH_played'} = isH_played;
-list{'Stimulus'}{'coh_played'} = coh_played;
-list{'Stimulus'}{'numTones_played'} = numTones_played;
+    %Get intertrial interval
+    iti = list{'timing'}{'intertrial'};
 
-if strcmp(press, 'right')
-    choice = 1;
-    ensemble.setObjectProperty('xCenter', 5, target);
-elseif strcmp(press, 'left')
-    choice = 2; 
-    ensemble.setObjectProperty('xCenter', -5, target);
-elseif isempty(press)
-    choice = NaN;
-    if isH(counter)
-        ensemble.setObjectProperty('xCenter', -5, target);
+    %Get timestamp of button press time 
+    if ~isempty(press)
+        timestamp = ui.history;
+        %to ensure timestamp from a pressed key/button
+        timestamp = timestamp(timestamp(:, 2) > 1, :);
+        timestamp = timestamp(end);
+
+        %calculate reaction time 
+        rt = (timestamp - stim_start(counter)) * 1000; %ms
+        %record current choice 
+        cur_choice = press{1};
+
+        %get the number of tones played
+        visualModes = list{'control'}{'visualModes'};
+        coh_list = list{'control'}{'cohLevels'};
+        [~, ~, ~, ~, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
+        coh_list(counter), visualModes{counter});
+
+        %calculate the percentage of time the subject waited to respond
+        p = rt/(hd.trialDur + iti);
+        %if response time is greater than trial duration, reset to 100%
+        if p > 1
+            p = 1;
+        end 
+        %use to calculate number of bursts played
+        numTones_played(counter) = floor(p * bursts);
+
+        %to avoid index out of bounds errors with rounding 
+        n = numTones_played(counter);
+        if numTones_played(counter) > length(freq{counter})
+            n = length(freq{counter});
+        end 
+        %determine more popular pitch of played tones
+        playedTones = freq{counter}(1:n);
+        isLo = sum(playedTones == hd.loFreq);
+        isHi = sum(playedTones == hd.hiFreq);
+        coh_played(counter) = isHi/n;
+        isH_played(counter) = isHi > isLo;
     else 
-        ensemble.setObjectProperty('xCenter', 5, target);
+        rt = NaN;
+        cur_choice = NaN;
     end 
-end 
-ensemble.setObjectProperty('isVisible', true, target);
 
-%add choice to list 
-choices(counter) = choice;
-list{'Input'}{'choices'} = choices; 
+    cur_f = isH(counter) + 1; %isH : 2 - high | 1 - low
 
-%check whether or not choice was correct 
-if isempty(press)
-    correct = NaN;
-    string = 'Incorrect';
-elseif cur_f == choice
-    correct = 1;
-    string = 'Correct';
-else
-    correct = 0;
-    string = 'Incorrect';
-end
+    %Update choices list 
+    timestamps = list{'Timestamps'}{'choices'};
+    timestamps(counter) = timestamp;
+    list{'Timestamps'}{'choices'} = timestamps;
 
-corrects = list{'Input'}{'corrects'};
-corrects(counter) = correct;
-list{'Input'}{'corrects'} = corrects;
+    list{'Stimulus'}{'isH_played'} = isH_played;
+    list{'Stimulus'}{'coh_played'} = coh_played;
+    list{'Stimulus'}{'numTones_played'} = numTones_played;
 
-reac_times = list{'Input'}{'RT'};
-reac_times(counter) = rt;
-list{'Input'}{'RT'} = reac_times;
+    %assign choices and set target positions
+    if strcmp(press, 'right')
+        choice = 1;
+        ensemble.setObjectProperty('xCenter', 5, target);
+    elseif strcmp(press, 'left')
+        choice = 2; 
+        ensemble.setObjectProperty('xCenter', -5, target);
+    elseif isempty(press)
+        choice = NaN;
+        if isH(counter)
+            ensemble.setObjectProperty('xCenter', -5, target);
+        else 
+            ensemble.setObjectProperty('xCenter', 5, target);
+        end 
+    end 
+    ensemble.setObjectProperty('isVisible', true, target);
 
-fprintf('Trial %d complete. Choice: %s (%s). RT: %3.3f \n', ...
-    counter, cur_choice, string, rt);
+    %add choice to list 
+    choices(counter) = choice;
+    list{'Input'}{'choices'} = choices; 
+
+    %check whether or not choice was correct 
+    if isempty(press)
+        correct = NaN;
+        string = 'Incorrect';
+    elseif cur_f == choice
+        correct = 1;
+        string = 'Correct';
+    else
+        correct = 0;
+        string = 'Incorrect';
+    end
+    
+    %store data in list
+    corrects = list{'Input'}{'corrects'};
+    corrects(counter) = correct;
+    list{'Input'}{'corrects'} = corrects;
+
+    reac_times = list{'Input'}{'RT'};
+    reac_times(counter) = rt;
+    list{'Input'}{'RT'} = reac_times;
+
+    fprintf('Trial %d complete. Choice: %s (%s). RT: %3.3f \n', ...
+        counter, cur_choice, string, rt);
 end 
 
 function waitForCheckKey(list) 
-%Get list items 
-ui = list{'Input'}{'controller'}; 
-ui.flushData;
+    %Get list items 
+    ui = list{'Input'}{'controller'}; 
+    ui.flushData;
 
-%Initialize variable 
-press = '';
-
-%Wait for keypress to occur 
-while ~strcmp(press, 'continue')
+    %Initialize variable 
     press = '';
-    read(ui);
-    [~, ~, eventname, ~] = ui.getHappeningEvent();
-    if ~isempty(eventname) && length(eventname) == 1
-        press = eventname;
+
+    %Wait for keypress to occur 
+    while ~strcmp(press, 'continue')
+        press = '';
+        read(ui);
+        [~, ~, eventname, ~] = ui.getHappeningEvent();
+        if ~isempty(eventname) && length(eventname) == 1
+            press = eventname;
+        end 
     end 
-end 
 end 
 
 function playstim(list) 
-%Add current iteration to counter 
-counter = list{'Counter'}{'trial'};
-coh_list = list{'control'}{'cohLevels'};
-visualModes = list{'control'}{'visualModes'};
+    %Add current iteration to counter 
+    counter = list{'Counter'}{'trial'};
+    coh_list = list{'control'}{'cohLevels'};
+    visualModes = list{'control'}{'visualModes'};
 
-hd = list{'Stimulus'}{'header'};
+    hd = list{'Stimulus'}{'header'};
+    
+    %produce the stimulus
+    [waveform, full_stimulus, f, h, ~] = VisualTones(hd.loFreq, hd.hiFreq,...
+        coh_list(counter), visualModes{counter});
 
-[waveform, full_stimulus, f, h, ~] = VisualTones(hd.loFreq, hd.hiFreq,...
-    coh_list(counter), visualModes{counter});
+    %player information 
+    player = list{'Stimulus'}{'player'};    
+    player.wave = full_stimulus; %both auditory and visual data 
+    %player.wave = waveform; %auditory only
+    player.prepareToPlay;
+    player.play;
 
-%player information 
-player = list{'Stimulus'}{'player'};    
-player.wave = full_stimulus;
-%player.wave = waveform;
-player.prepareToPlay;
-player.play;
+    %log stimulus timestamps 
+    stim_start = list{'Timestamps'}{'stim_start'};
+    if ~isempty(player.playTime)
+        stim_start(counter) = player.playTime;
+    end 
+    list{'Timestamps'}{'stim_start'} = stim_start;
+    
+    %store waveform
+    waveforms = list{'Stimulus'}{'waveforms'};
+    waveforms{counter} = waveform;
+    list{'Stimulus'}{'waveforms'} = waveforms;
 
-%log stimulus timestamps 
-stim_start = list{'Timestamps'}{'stim_start'};
-if ~isempty(player.playTime)
-    stim_start(counter) = player.playTime;
-end 
-list{'Timestamps'}{'stim_start'} = stim_start;
-
-waveforms = list{'Stimulus'}{'waveforms'};
-waveforms{counter} = waveform;
-list{'Stimulus'}{'waveforms'} = waveforms;
-
-freq = list{'Stimulus'}{'freq'};
-freq{counter} = f;
-list{'Stimulus'}{'freq'} = freq;
-
-isH = list{'Stimulus'}{'isH'};
-isH(counter) = h;
-list{'Stimulus'}{'isH'} = isH;
+    %store frequency data 
+    freq = list{'Stimulus'}{'freq'};
+    freq{counter} = f;
+    list{'Stimulus'}{'freq'} = freq;
+    
+    isH = list{'Stimulus'}{'isH'};
+    isH(counter) = h;
+    list{'Stimulus'}{'isH'} = isH;
 end 
