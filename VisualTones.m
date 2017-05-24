@@ -1,4 +1,4 @@
-function [totalBurst, stimulus, frequencies, isHigh, bursts ] = VisualTones(loFreq, hiFreq, c, mode)
+function [totalBurst, stimulus, frequencies, isHigh, bursts] = VisualTones(loFreq, hiFreq, c, mode)
 %VISUALTONES uses frequency boundaries of the form [loFreq, hiFreq]
 %and a coherence factor (c) to produce a sound stimulus of 2 seconds.  The
 %coherence is a value between 0 and 1, where 0 means all frequencies are low
@@ -100,7 +100,7 @@ isHigh = numHi > numLo;
 
 %concatenate and play
 stimulus = cat(1, totalBurst, visualBurst);
-% sound(stimulus, 44100);
+%sound(stimulus, 44100);
 
 end
 

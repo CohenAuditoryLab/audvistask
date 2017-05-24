@@ -33,7 +33,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 4;
 % number of trials per visual mode
-block_rep = 2; %5 %50
+block_rep = 15; %5 %50
 % possible visual values 
 vis_vals = {'None', 'Low', 'High', 'All'};
 
@@ -105,7 +105,7 @@ list{'Input'}{'responseWindow'} = responsewindow;
 player = dotsPlayableWave_2Channel();
 player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
-player.intensity = 1;
+player.intensity = 3;
 %% Time Variables
 iti = 1; %s
 list{'timing'}{'intertrial'} = iti; %intertrial interval
@@ -626,7 +626,7 @@ visualModes = list{'control'}{'visualModes'};
 
 hd = list{'Stimulus'}{'header'};
 
-[waveform, full_stimulus, f, h] = VisualTones(hd.loFreq, hd.hiFreq,...
+[waveform, full_stimulus, f, h, ~] = VisualTones(hd.loFreq, hd.hiFreq,...
     coh_list(counter), visualModes{counter});
 
 %player information 
