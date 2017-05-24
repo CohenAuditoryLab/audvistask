@@ -1,5 +1,6 @@
 %% prepare to run AudVisTask_v1
 
+%clean all existing data
 clear;
 close all;
 topsDataLog.flushAllData();
@@ -40,12 +41,14 @@ choices = list{'Input'}{'choices'};
 success = list{'Input'}{'corrects'};
 rt = list{'Input'}{'RT'};
 
+%matlab data table that includes waveform
 data_table_stim = table((1:nTrials)', visualModes,cohLevels,coh_played,....
     numTones_played,waveforms,isH,isH_played,choices,success,stimStart,...
     stimStop,responseTimeStamp,rt,'VariableNames',{'trialID','visualMode',...
     'cohLevel','coh_played','numTones_played','waveform','isH',...
     'isH_played','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
+%csv file that does not include waveform
 data_table_nostim = table((1:nTrials)',visualModes,cohLevels,coh_played,...
     numTones_played,isH,isH_played,choices,success,stimStart,...
     stimStop,responseTimeStamp,rt,'VariableNames',{'trialID','visualMode',...
@@ -53,8 +56,11 @@ data_table_nostim = table((1:nTrials)',visualModes,cohLevels,coh_played,...
     'playedHigh','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
 
+%save matlab data table
 save([data_folder save_filename '_table.mat'], 'data_table_stim', 'meta_data');
+%save csv file
 writetable(data_table_nostim, strcat(save_filename,'.csv'));
 
+%clear again
 clear
 close all;
