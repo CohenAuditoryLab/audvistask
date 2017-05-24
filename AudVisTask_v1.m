@@ -33,7 +33,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 4;
 % number of trials per visual mode
-block_rep = 15; %5 %50
+block_rep = 1; %5 %50
 % possible visual values 
 vis_vals = {'None', 'Low', 'High', 'All'};
 
@@ -486,11 +486,15 @@ while ~strcmp(press, 'left') && ~strcmp(press, 'right')
     press = '';
     read(ui);
     [~, ~, eventname, ~] = ui.getHappeningEvent();
+    events = cell(length(coh_played), 1);
     
     if ~isempty(eventname) && length(eventname) == 1
         press = eventname;
+        events(counter) = press;
         %stop the stimulus once a response is detected 
-        player.stop;
+        if ~strcmp(events{counter}, 'continue')
+            player.stop;
+        end
         
         %get the timestamp of the stimulus stop time 
         stim_stop = list{'Timestamps'}{'stim_stop'};

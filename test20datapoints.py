@@ -97,4 +97,4 @@ def main(file_string):
     pyplot.title('Coherence vs. Reaction Time')
     pyplot.show()
 
-main('AudVisTask_v1_Diana_170524_1154.csv')
+main('Auditory-Visual Task/AudVisTask_v1_Diana_170524_1154.csv')
