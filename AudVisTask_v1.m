@@ -34,7 +34,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 4;
 % number of trials per visual mode
-block_rep = 1; %15 %50
+block_rep = 25; %15 %50
 % possible visual values to select from
 vis_vals = {'None', 'Low', 'High', 'All'};
 
@@ -651,8 +651,8 @@ function playstim(list)
 
     %player information 
     player = list{'Stimulus'}{'player'};    
-    player.wave = full_stimulus; %both auditory and visual data 
-    %player.wave = waveform; %auditory only
+    %player.wave = full_stimulus; %both auditory and visual data 
+    player.wave = [waveform; waveform]; %auditory only
     player.prepareToPlay;
     player.play;
 
