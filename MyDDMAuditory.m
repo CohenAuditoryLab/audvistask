@@ -56,7 +56,7 @@ Lch     = Behavior(:,2)==1;
 %   2. choice (1: high-tone choice, 0: low-tone choice)
 %   3. RT (ms)
 %   4. correct (1) or error (0)
-scoh = Behavior(:,1)*200-100;
+scoh = Behavior(:,1).*200-100;
 Lcor = Behavior(:,4); %(Behavior(:,1)>= -20 & Behavior(:,1)<20) | (Behavior(:,1)>50&Lch) | (Behavior(:,1)<50&~Lch);
 data = cat(2, scoh, Behavior(:,2), Behavior(:,3), double(Lcor));
 

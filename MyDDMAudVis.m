@@ -13,6 +13,14 @@ close all
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/');
 %load in data
 PopBehavior = csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0);
+Headings = load('AudVisTask_v1_Brianna_170530_1345_table.mat');
+h = Headings.data_table_stim(:, 2);
+
+%extract block visual modes from matrix
+block1 = h{1, 1};
+block2 = h{bin_size + 1,1};
+block3 = h{2*bin_size + 1,1};
+block4 = h{3*bin_size + 1,1};
 
 %coherence bins
 cbins = [ ...
@@ -224,69 +232,72 @@ end
 subplot(3,1,1); cla reset; hold on;
 %%%block 1
 plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
-plot(cfax, ps1.*100, 'k-');
+p1 = plot(cfax, ps1.*100, 'k-');
 plot([-100 0], [lapse1*100 lapse1*100], 'k--');
 plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
 %%%block 2
 plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
-plot(cfax, ps2.*100, 'r-');
+p2 = plot(cfax, ps2.*100, 'r-');
 plot([-100 0], [lapse2*100 lapse2*100], 'r--');
 plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
 %%%block 3
 plot(cax3, pmf3, 'b.', 'MarkerSize', 8);
-plot(cfax, ps3.*100, 'b-');
+p3 = plot(cfax, ps3.*100, 'b-');
 plot([-100 0], [lapse3*100 lapse3*100], 'b--');
 plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
 %%%block 4
 plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
-plot(cfax, ps4.*100, 'g-');
+p4 = plot(cfax, ps4.*100, 'g-');
 plot([-100 0], [lapse4*100 lapse4*100], 'g--');
 plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
 ylim([-1 101])
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('high-tone choice (%)')
+legend([p1, p2, p3, p4], [block1, block2, block3, block4])
 
 subplot(3,1,2); cla reset; hold on;
 %%%block 1
 plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
 plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-plot(cfax, rts1, 'k-');
+g1 = plot(cfax, rts1, 'k-');
 plot([0 100], fits1([4 4]), 'k--');
 plot([-100 0], fits1([5 5]), 'k--');
 %%%block 2
 plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
 plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-plot(cfax, rts2, 'r-');
+g2 = plot(cfax, rts2, 'r-');
 plot([0 100], fits2([4 4]), 'r--');
 plot([-100 0], fits2([5 5]), 'r--');
 %%%block 3
 plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
 plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-plot(cfax, rts3, 'b-');
+g3 = plot(cfax, rts3, 'b-');
 plot([0 100], fits3([4 4]), 'b--');
 plot([-100 0], fits3([5 5]), 'b--');
 %%%block 4
 plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
 plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-plot(cfax, rts4, 'g-');
+g4 = plot(cfax, rts4, 'g-');
 plot([0 100], fits4([4 4]), 'g--');
 plot([-100 0], fits4([5 5]), 'g--');
 ylim([-50 2000])
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('Response time (ms)')
+legend([g1, g2, g3, g4], [block1, block2, block3, block4])
 
 subplot(3,1,3); cla reset; hold on;
 %%%block 1
 plot(cfax(cfax<0), rts1(cfax<0)-fits1(5), 'k-');hold on;
-plot(cfax(cfax>0), rts1(cfax>0)-fits1(4), 'k-');
+v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits1(4), 'k-');
 %%%block 2
 plot(cfax(cfax<0), rts2(cfax<0)-fits2(5), 'r-');hold on;
-plot(cfax(cfax>0), rts2(cfax>0)-fits2(4), 'r-');
+v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits2(4), 'r-');
 %%%block 3
 plot(cfax(cfax<0), rts3(cfax<0)-fits3(5), 'b-');hold on;
-plot(cfax(cfax>0), rts3(cfax>0)-fits3(4), 'b-');
+v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits3(4), 'b-');
 %%%block 4
 plot(cfax(cfax<0), rts4(cfax<0)-fits4(5), 'g-');hold on;
-plot(cfax(cfax>0), rts4(cfax>0)-fits4(4), 'g-');
+v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits4(4), 'g-');
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('Decision time (ms): RT-nonDT')
+legend([v1 v2 v3 v4],[block1 block2 block3 block4])
