@@ -55,11 +55,16 @@ data_table_nostim = table((1:nTrials)',visualModes,cohLevels,coh_played,...
     'cohLevel','coh_played','numTones_played','isHigh',...
     'playedHigh','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
+data_table_ddm = table(coh_played, choices - 1, rt);
 
-%save matlab data table
+
+%save matlab data table (to keep track of waveform)
 save([data_folder save_filename '_table.mat'], 'data_table_stim', 'meta_data');
-%save csv file
+%save csv file with all data except waveform
 writetable(data_table_nostim, strcat(save_filename,'.csv'));
+%save csv file for DDM (column 1 - coherence from 0 to 1, column 2 - choice
+%minus 1, column 3 - RT in ms) 
+writetable(data_table_ddm, strcat('DDM_', save_filename, '.csv'));
 
 %clear again
 clear
