@@ -12,7 +12,7 @@ timeCounter = 0;
 totalBurst = [];
 visualBurst = [];
 frequencies = [];
-bursts = 0;
+bursts = [];
 
 while timeCounter < 4000
     %determine frequency from coherence 
@@ -22,7 +22,6 @@ while timeCounter < 4000
     else 
         freq = loFreq;
     end 
-    frequencies(end+1) = freq;
 
     %create sine wave from established frequency
     %duration in ms
@@ -60,7 +59,10 @@ while timeCounter < 4000
     
     totalBurst = [totalBurst, gatedSine, pauseBurst];
     timeCounter = timeCounter + duration + interval;
-    bursts = bursts + 1;
+    
+    frequencies(end+1) = freq;
+    bursts(end+1) = 50;
+    bursts(end+1) = interval;
     
     %create visual stimulus 
     %if input string is None

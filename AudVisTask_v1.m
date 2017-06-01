@@ -199,6 +199,7 @@ list{'Stimulus'}{'player'} = player;
 list{'Stimulus'}{'waveforms'} = cell(nTrials,1);
 list{'Stimulus'}{'freq'} = cell(nTrials,1);
 list{'Stimulus'}{'isH'} = zeros(nTrials,1);
+list{'Stimulus'}{'bursts'} = zeros(nTrials,136);
 list{'Stimulus'}{'isH_played'} = zeros(nTrials,1);
 list{'Stimulus'}{'coh_played'} = zeros(nTrials,1);
 list{'Stimulus'}{'numTones_played'} = zeros(nTrials,1);
@@ -472,6 +473,7 @@ function string = waitForChoiceKey(list)
 
     % whether it's a high-freq trial
     isH = list{'Stimulus'}{'isH'}; 
+    bursts = list{'Stimulus'}{'bursts'};
     isH_played = list{'Stimulus'}{'isH_played'};
     coh_played = list{'Stimulus'}{'coh_played'};
     numTones_played = list{'Stimulus'}{'numTones_played'};
@@ -531,25 +533,17 @@ function string = waitForChoiceKey(list)
         cur_choice = press{1};
 
         %get the number of tones played
-        visualModes = list{'control'}{'visualModes'};
-        coh_list = list{'control'}{'cohLevels'};
-        [~, ~, ~, ~, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
-        coh_list(counter), visualModes{counter});
+        b = bursts(counter, :);
+        cumT = 0;
+        count = 1;
+        n = 0;
+        while cumT < rt && count <= sum((b ~= 0))
+            n = n + 1;
+            cumT = cumT + bursts(counter,count) + bursts(counter, count+1);
+            count = count + 2;
+        end
+        numTones_played(counter) = n;
 
-        %calculate the percentage of time the subject waited to respond
-        p = rt/(hd.trialDur);
-        %if response time is greater than trial duration, reset to 100%
-        if p > 1
-            p = 1;
-        end 
-        %use to calculate number of bursts played
-        numTones_played(counter) = floor(p * bursts);
-
-        %to avoid index out of bounds errors with rounding 
-        n = numTones_played(counter);
-        if numTones_played(counter) > length(freq{counter})
-            n = length(freq{counter});
-        end 
         %determine more popular pitch of played tones
         playedTones = freq{counter}(1:n);
         isLo = sum(playedTones == hd.loFreq);
@@ -646,7 +640,7 @@ function playstim(list)
     hd = list{'Stimulus'}{'header'};
     
     %produce the stimulus
-    [waveform, full_stimulus, f, h, ~] = VisualTones(hd.loFreq, hd.hiFreq,...
+    [waveform, full_stimulus, f, h, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
         coh_list(counter), visualModes{counter});
 
     %player information 
@@ -676,4 +670,8 @@ function playstim(list)
     isH = list{'Stimulus'}{'isH'};
     isH(counter) = h;
     list{'Stimulus'}{'isH'} = isH;
+    
+    b = list{'Stimulus'}{'bursts'};
+    b(counter, 1:length(bursts)) = bursts;
+    list{'Stimulus'}{'bursts'} = b;
 end 
