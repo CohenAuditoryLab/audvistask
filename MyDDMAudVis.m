@@ -1,4 +1,4 @@
-function MyDDMAudVis(bin_size)
+function MyDDMAudVis(block_size)
 
 % Data File being used:
 % 1st column: visual mode as string
@@ -10,17 +10,19 @@ function MyDDMAudVis(bin_size)
 close all
 
 %cd into file that holds data 
-cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/');
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-PopBehavior = csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0);
+PopBehavior = csvread('DDM_AudVisTask_v1_VisualTest1_170601_1042.csv', 1, 0); %block size 25
+%csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
+%csvread('SampleData.csv'); %block size 15
 Headings = load('AudVisTask_v1_Brianna_170530_1345_table.mat');
 h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix
 block1 = h{1, 1};
-block2 = h{bin_size + 1,1};
-block3 = h{2*bin_size + 1,1};
-block4 = h{3*bin_size + 1,1};
+block2 = h{block_size + 1,1};
+block3 = h{2*block_size + 1,1};
+block4 = h{3*block_size + 1,1};
 
 %coherence bins
 cbins = [ ...
@@ -49,15 +51,15 @@ pmf4   = NaN(nbins,1);
 cmf4   = NaN(nbins,2);
 
 %set data to variable
-Behavior1 = PopBehavior(1:bin_size, :);
-Behavior2 = PopBehavior(bin_size+1:2*bin_size, :);
-Behavior3 = PopBehavior(2*bin_size+1:3*bin_size, :);
-Behavior4 = PopBehavior(3*bin_size+1:4*bin_size, :);
+Behavior1 = PopBehavior(1:block_size, :);
+Behavior2 = PopBehavior(block_size+1:2*block_size, :);
+Behavior3 = PopBehavior(2*block_size+1:3*block_size, :);
+Behavior4 = PopBehavior(3*block_size+1:4*block_size, :);
 %enter file for fit functions
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/DDM/');
 
 %calculate number of trials 
-ntrials = bin_size;
+ntrials = block_size;
 %create vector of true = high false = low; ensures all values are 0 or 1 
 Lch1     = Behavior1(:,2)==1;
 Lch2     = Behavior2(:,2)==1;
@@ -241,20 +243,21 @@ p2 = plot(cfax, ps2.*100, 'r-');
 plot([-100 0], [lapse2*100 lapse2*100], 'r--');
 plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
 %%%block 3
-plot(cax3, pmf3, 'b.', 'MarkerSize', 8);
-p3 = plot(cfax, ps3.*100, 'b-');
-plot([-100 0], [lapse3*100 lapse3*100], 'b--');
+plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
 plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
 %%%block 4
 plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
 p4 = plot(cfax, ps4.*100, 'g-');
 plot([-100 0], [lapse4*100 lapse4*100], 'g--');
 plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
-ylim([-1 101])
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('high-tone choice (%)')
 legend([p1, p2, p3, p4], [block1, block2, block3, block4])
 
+%Horizontal shifts of these lines imply changes in the mean rate-of-rise 
+%swivels about a fixed point at infinite RT imply changes in the bound height
 subplot(3,1,2); cla reset; hold on;
 %%%block 1
 plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
@@ -280,7 +283,6 @@ plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
 g4 = plot(cfax, rts4, 'g-');
 plot([0 100], fits4([4 4]), 'g--');
 plot([-100 0], fits4([5 5]), 'g--');
-ylim([-50 2000])
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('Response time (ms)')
 legend([g1, g2, g3, g4], [block1, block2, block3, block4])

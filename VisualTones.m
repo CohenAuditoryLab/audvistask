@@ -68,7 +68,7 @@ while timeCounter < 2000
     %if input string is Low
     if strcmp(mode, 'Low')
         if freq == loFreq
-            visual = ones(1, length(gatedSine));
+            visual = 10 .* ones(1, length(gatedSine));
         else 
             visual = zeros(1, length(gatedSine));
         end
@@ -77,7 +77,7 @@ while timeCounter < 2000
     %if input string is High
     if strcmp(mode, 'High')
         if freq == hiFreq 
-            visual = ones(1, length(gatedSine));
+            visual = 10 .* ones(1, length(gatedSine));
         else
             visual = zeros(1, length(gatedSine));
         end
@@ -85,7 +85,7 @@ while timeCounter < 2000
     
     %if input string is All
     if strcmp(mode, 'All')
-        visual = ones(1, length(gatedSine));
+        visual = 10 .* ones(1, length(gatedSine));
     end
     
     %for graphing purposes
@@ -103,4 +103,3 @@ stimulus = cat(1, totalBurst, visualBurst);
 %sound(stimulus, 44100);
 
 end
-

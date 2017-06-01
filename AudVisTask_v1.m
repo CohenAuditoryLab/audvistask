@@ -34,7 +34,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 4;
 % number of trials per visual mode
-block_rep = 25; %15 %50
+block_rep = 1; %15 %50
 % possible visual values to select from
 vis_vals = {'None', 'Low', 'High', 'All'};
 
@@ -96,8 +96,8 @@ end
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
-hd.loFreq = 5000; %hz      312.5 |  625 | 1250 | 2500 |  5000
-hd.hiFreq = 20000; %hz     625   | 1250 | 2500 | 5000 | 10000
+hd.loFreq = 4500; %hz      312.5 |  625 | 1250 | 2500 |  5000
+hd.hiFreq = 21000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
 hd.trialDur = 2000; %ms
@@ -651,8 +651,8 @@ function playstim(list)
 
     %player information 
     player = list{'Stimulus'}{'player'};    
-    %player.wave = full_stimulus; %both auditory and visual data 
-    player.wave = [waveform; waveform]; %auditory only
+    player.wave = full_stimulus; %both auditory and visual stimuli 
+    %player.wave = [waveform; waveform]; %auditory only
     player.prepareToPlay;
     player.play;
 

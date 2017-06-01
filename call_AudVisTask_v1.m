@@ -10,7 +10,7 @@ topsDataLog.flushAllData();
 task.run();
 
 %Post-Processing 
-data_folder = '/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/';
+data_folder = '/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/';
 save_filename = list{'meta'}{'saveFilename'};
 
 % create data table 
@@ -55,9 +55,10 @@ data_table_nostim = table((1:nTrials)',visualModes,cohLevels,coh_played,...
     'cohLevel','coh_played','numTones_played','isHigh',...
     'playedHigh','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
+%csv file for DDM code - only includes specified columns
 data_table_ddm = table(coh_played, choices - 1, rt, success);
 
-
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %save matlab data table (to keep track of waveform)
 save([data_folder save_filename '_table.mat'], 'data_table_stim', 'meta_data');
 %save csv file with all data except waveform
