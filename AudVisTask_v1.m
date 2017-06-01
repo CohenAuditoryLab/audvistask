@@ -78,7 +78,7 @@ cohLevels = zeros(nTrials, 1);
 list{'Counter'}{'trial'} = 0;
 
 %possible coherences
-coherences = [0, .25, .5, .75, 1];
+coherences = [0, .18, .25, .33, .5, .67, .75, .82, 1];
 
 for i = 1:nTrials
     %add coherence as a condition
@@ -88,7 +88,7 @@ for i = 1:nTrials
     tmp_coh.addAssignment('cohLevel', likesCohLevel, '.', 'name');
 
     %randomly generate a coherence
-    index = randsample(5,1);
+    index = randsample(9,1);
     c = coherences(index);
     cohLevels(i) = c;
 end 
@@ -100,11 +100,11 @@ hd.loFreq = 4500; %hz      312.5 |  625 | 1250 | 2500 |  5000
 hd.hiFreq = 21000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
-hd.trialDur = 2000; %ms
+hd.trialDur = 4000; %ms
 hd.fs = 44100; %samples/sec
 
 % INPUT PARAMETERS
-responsewindow = hd.trialDur; %time allowed to respond = trial duration, ms
+responsewindow = hd.trialDur/2; %time allowed to respond = half trial duration, ms
 list{'Input'}{'responseWindow'} = responsewindow;
 
 % CREATE AUDIOPLAYER
@@ -113,7 +113,7 @@ player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
 player.intensity = 3;
 %% Time Variables
-iti = 1; %seconds
+iti = 2; %seconds
 list{'timing'}{'intertrial'} = iti; %intertrial interval, between tones
 %% Input Settings
 
@@ -537,7 +537,7 @@ function string = waitForChoiceKey(list)
         coh_list(counter), visualModes{counter});
 
         %calculate the percentage of time the subject waited to respond
-        p = rt/(hd.trialDur + iti);
+        p = rt/(hd.trialDur);
         %if response time is greater than trial duration, reset to 100%
         if p > 1
             p = 1;

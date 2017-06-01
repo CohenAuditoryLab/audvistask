@@ -1,11 +1,10 @@
 function MyDDMAudVis(block_size)
 
 % Data File being used:
-% 1st column: visual mode as string
-% 2nd column: percentage of high tone (mapped this percentage to signed coherence like this: (proportion-50).*2)
-% 3rd column: monkey's choice (1: high-tone choice, 0: low-tone choice)
-% 4th column: response time (sec)
-% 5th column: success of choice (1: correct, 0: incorrect)
+% 1st column: percentage of high tone (mapped this percentage to signed coherence like this: (proportion-50).*2)
+% 2nd column: monkey's choice (1: high-tone choice, 0: low-tone choice)
+% 3rd column: response time (sec)
+% 4th column: success of choice (1: correct, 0: incorrect)
 
 close all
 
