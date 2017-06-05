@@ -276,26 +276,47 @@ if errg5 < err0_5
 end
 
 %total error 
-error_indep = -(err0_1 + err0_2 + err0_3 + err0_4 + err0_5);
+err_indep = -(err0_1 + err0_2 + err0_3 + err0_4 + err0_5);
 
 %% Simultaneous curve fit, holding accumulation rate parameter constant
 
-scoh_all = cat(1, scoh1, scoh2, scoh3, scoh4, scoh5);
 data_all = cat(2, data1, data2, data3, data4, data5);
 
 %fit holding mu constant
-[fits_mu,err_mu] = fmincon(@(fits)fitBK_err_constDrift(fits, scoh1, ...
+[fits_mu,err_mu] = fmincon(@(fits)fitBK_err_constDrift(fits, ...
     data_all, [lapse1, lapse2, lapse3, lapse4, lapse5]), ...
     X0g1, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
     'MaxIter', 30000, 'MaxFunEvals', 30000));
 
 %% Simultaneous curve fit, holding bounds parameters constant
 
-%fit the curves holding BOTH the lower and upper bounds constant
-
+%fit holding both A and B bounds constant
+[fits_AB,err_AB] = fmincon(@(fits)fitBK_err_constDrift(fits, ...
+    data_all, [lapse1, lapse2, lapse3, lapse4, lapse5]), ...
+    X0g1, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
+    'MaxIter', 30000, 'MaxFunEvals', 30000));
 
 %% Determine the best of the models 
-
 %use BIC or AIC to determine the best fit model
+
+errors = [err_indep, err_mu, err_AB];
+aic = aicbic(errors, [5, 4, 3]);
+[~, index] = min(aic);
+
+if index == 1
+    [ps1,rts1] = fitJT_val_simple5L(cfax, fits1, lapse1);
+    [ps2,rts2] = fitJT_val_simple5L(cfax, fits2, lapse2);
+    [ps3,rts3] = fitJT_val_simple5L(cfax, fits3, lapse3);
+    [ps4,rts4] = fitJT_val_simple5L(cfax, fits4, lapse4);
+    [ps5,rts5] = fitJT_val_simple5L(cfax, fits5, lapse5);
+elseif index == 2 
+    cohs  = linspace(-100, 100, length(data1(:, 1)));
+    [ps, rts] = fitBK_val_constDrift4L(cohs, fits_mu, [lapse1, lapse2,...
+        lapse3, lapse4, lapse5]);
+elseif index == 3
+    
+end
+    
+    
 
 end 
