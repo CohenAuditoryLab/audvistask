@@ -1,4 +1,4 @@
-function err_ = fitBK_err_constDrift(fits, cohs, data, lapse)
+function err_ = fitBK_err_constDrift(fits, data, lapse)
 
 % 
 % fits are from fitBK_val_constDrift4L
@@ -23,7 +23,8 @@ function err_ = fitBK_err_constDrift(fits, cohs, data, lapse)
 % 3rd column: response time (sec)
 % 4th column: correct
 
-[ps, rts] = fitBK_val_constDrift4L(cohs, fits, lapse);
+cohs  = -100:.1:100;
+[ps, rts] = fitBK_val_constDrift4L(cohs', fits, lapse);
 
 % logL of pmf
 logpPMF1 = log(binopdf(data(:,2), 1, ps(1)));

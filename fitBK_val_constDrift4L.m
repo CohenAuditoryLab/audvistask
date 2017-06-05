@@ -6,7 +6,7 @@ function [ps_, rts_] = fitBK_val_constDrift4L(cohs, params, lapse)
 %       - for stim corresponding to correct "B" choices
 %
 % 5 parameters:
-%   1   ... k    = drift rate
+%   1   ... k    = drift rate -> CONSTANT 
 %   2   ... A    = A bound
 %   3   ... B    = B bound
 %   4   ... Andt = non-decision time for A choices in msec
@@ -72,7 +72,7 @@ ps_5 = (eB5 .* eA5 - eA5) ./ (eB5 .* eA5 - 1);
 ps_5(abs(cohs)<=eps) = B5 ./ (A5 + B5);
 
 % if lapse given
-if nargin > 7
+if nargin > 2
     ps_1 = lapse(1) + (1-2.*lapse(1)).*ps_1;
     ps_2 = lapse(2) + (1-2.*lapse(2)).*ps_2;
     ps_3 = lapse(3) + (1-2.*lapse(3)).*ps_3;

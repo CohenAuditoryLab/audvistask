@@ -6,17 +6,13 @@ function MyDDMAudVis_v2(block_size)
 % 13th column: response time (sec)
 % 9th column: success of choice (1: correct, 0: incorrect)
 
-%%%%%% This should be a version of DDM that works with the full csv so we
-%%%%%% can save one instead of two!!! Not finished.
-
 close all
 
 %cd into file that holds data 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
-%load in data, starting with 3rd column
-PopBehavior = csvread('AudVisTask_v1_Beta_Diana_170602_1142.csv', 1, 2); %block size 25
-%csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
-%csvread('SampleData.csv'); %block size 15
+%load in data, starting with 3rd column (subtract 2 from all indices
+%indicated above) 
+PopBehavior = csvread('AudVisTask_v1_Beta_Diana_170602_1142.csv', 1, 2); %block size 75
 Headings = load('AudVisTask_v1_Beta_Diana_170602_1142_table.mat');
 h = Headings.data_table_stim(:, 2);
 
@@ -27,14 +23,26 @@ block3 = h{2*block_size + 1,1};
 block4 = h{3*block_size + 1,1};
 
 %coherence bins
+% cbins = [ ...
+%     -100  -99
+%     -99  -60
+%     -60  -20
+%     -20    20
+%     20   60
+%     60  100
+%     100  101];
+
 cbins = [ ...
     -100  -99
-    -99  -60
-    -60  -20
-    -20    20
-    20   60
-    60  100
-    100  101];
+     -99  -50
+     -50  -34
+     -34  -20
+     -20    0
+       0   20
+      20   34
+      34   50
+      50   99
+      99  100];
 
 %calculate number of coherence bins 
 nbins = size(cbins,1);
@@ -63,10 +71,10 @@ cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/DDM/');
 %calculate number of trials 
 ntrials = block_size;
 %create vector of true = high false = low; ensures all values are 0 or 1 
-Lch1     = Behavior1(:,6) -1 == 1;
-Lch2     = Behavior2(:,6) -1 == 1;
-Lch3     = Behavior3(:,6) -1 == 1;
-Lch4     = Behavior4(:,6) -1 == 1;
+Lch1     = Behavior1(:,6) == 2;
+Lch2     = Behavior2(:,6) == 2;
+Lch3     = Behavior3(:,6) == 2;
+Lch4     = Behavior4(:,6) == 2;
 
 % create a data matrix for each visual mode, columns are:
 %   1. re-scale signal strength to [-100, 100]
@@ -305,7 +313,4 @@ v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits4(4), 'g-');
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('Decision time (ms): RT-nonDT')
 legend([v1 v2 v3 v4],[block1 block2 block3 block4])
-
-
 end
-

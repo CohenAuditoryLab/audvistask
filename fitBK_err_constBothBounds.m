@@ -2,7 +2,8 @@ function err_ = fitBK_err_constBothBounds(fits, data, lapse)
 % 
 % fits are from fitBK_val_constBounds3L
 
-cohs = [data(:,1), data(:,5), data(:,9), data(:,13), data(:,17)];
+%cohs = [data(:,1), data(:,5), data(:,9), data(:,13), data(:,17)];
+cohs  = -100:.1:100;
 [ps, rts] = fitBK_val_constDrift4L(cohs, fits, lapse);
 
 % logL of pmf
