@@ -32,11 +32,11 @@ list{'meta'}{'saveFilename'} = save_filename;
 %% Settings for generating the sequence of conditions
 
 % number visual modes 
-block_size = 4;
+block_size = 5;
 % number of trials per visual mode
-block_rep = 1; %15 %50
+block_rep = 60; %1 %15 %50 %75
 % possible visual values to select from
-vis_vals = {'None', 'Low', 'High', 'All'};
+vis_vals = {'None', 'Low', 'High', 'All', 'Random'};
 
 %% Visual conditions for each trial
 
@@ -78,7 +78,8 @@ cohLevels = zeros(nTrials, 1);
 list{'Counter'}{'trial'} = 0;
 
 %possible coherences
-coherences = [0, .18, .25, .33, .5, .67, .75, .82, 1];
+%most data should be collected between about 25 and 75
+coherences = [0, .25, .33, .40, .50, .60, .67, .75, 1];
 
 for i = 1:nTrials
     %add coherence as a condition
@@ -96,8 +97,8 @@ end
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
-hd.loFreq = 4500; %hz      312.5 |  625 | 1250 | 2500 |  5000
-hd.hiFreq = 21000; %hz     625   | 1250 | 2500 | 5000 | 10000
+hd.loFreq = 5000; %hz      312.5 |  625 | 1250 | 2500 |  5000
+hd.hiFreq = 20000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
 hd.trialDur = 4000; %ms
@@ -111,7 +112,7 @@ list{'Input'}{'responseWindow'} = responsewindow;
 player = dotsPlayableWave_2Channel();
 player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
-player.intensity = 3;
+player.intensity = 1;
 %% Time Variables
 iti = 2; %seconds
 list{'timing'}{'intertrial'} = iti; %intertrial interval, between tones
