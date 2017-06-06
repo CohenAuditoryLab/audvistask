@@ -34,7 +34,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 5;
 % number of trials per visual mode
-block_rep = 60; %1 %15 %50 %75
+block_rep = 80; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'None', 'Low', 'High', 'All', 'Random'};
 

@@ -6,7 +6,7 @@ close all;
 topsDataLog.flushAllData();
 
 %dispInd = 0 for small screen, 1 for full screen, >1 for external monitors
-[task, list] = AudVisTask_v1(0); 
+[task, list] = AudVisTask_v1(1); 
 task.run();
 
 %Post-Processing 
@@ -56,7 +56,7 @@ data_table_nostim = table((1:nTrials)',visualModes,cohLevels,coh_played,...
     'playedHigh','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
 %csv file for DDM code - only includes specified columns
-data_table_ddm = table(coh_played, choices - 1, rt, success);
+%data_table_ddm = table(coh_played, choices - 1, rt, success);
 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %save matlab data table (to keep track of waveform)
@@ -65,7 +65,7 @@ save([data_folder save_filename '_table.mat'], 'data_table_stim', 'meta_data');
 writetable(data_table_nostim, strcat(save_filename,'.csv'));
 %save csv file for DDM (column 1 - coherence from 0 to 1, column 2 - choice
 %minus 1, column 3 - RT in ms) 
-writetable(data_table_ddm, strcat('DDM_', save_filename, '.csv'));
+%writetable(data_table_ddm, strcat('DDM_', save_filename, '.csv'));
 
 %clear again
 clear

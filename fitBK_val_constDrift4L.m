@@ -5,7 +5,7 @@ function [ps_, rts_] = fitBK_val_constDrift4L(cohs, params, lapse)
 %       + for stim corresponding to correct "A" choices
 %       - for stim corresponding to correct "B" choices
 %
-% 5 parameters:
+% 5 parameters: (1 constant + 5(5-1) = 21 total)
 %   1   ... k    = drift rate -> CONSTANT 
 %   2   ... A    = A bound
 %   3   ... B    = B bound

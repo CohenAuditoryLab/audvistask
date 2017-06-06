@@ -9,7 +9,7 @@ function MyDDMAudVis(block_size)
 close all
 
 %cd into file that holds data 
-cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/Beta - 4 Modes/');
 %load in data
 PopBehavior = csvread('DDM_AudVisTask_v1_Beta_Brianna_170602_1053.csv', 1, 0); %block size 25
 %csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
