@@ -309,8 +309,8 @@ Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
 %% Determine the best of the models
 %use BIC or AIC to determine the best fit model
 
- err_indep = -100000000;
- err_mu = -100000000;
+%  err_indep = -100000000;
+%  err_AB = -100000000;
 errors = [err_indep, err_mu, err_AB];
 aic = aicbic(errors, [5, 4, 3]);
 [~, index] = min(aic);
@@ -324,19 +324,21 @@ if index == 1
     
     t = 'Independent Fits';
 elseif index == 2
-    [ps, rts] = fitBK_val_constDrift4L(cfax, fits_mu, [lapse1, lapse2,...
+    M = repmat(cfax', 1, 5);
+    [ps, rts] = fitBK_val_constDrift4L(M, fits_mu, [lapse1, lapse2,...
         lapse3, lapse4, lapse5]);
-    ps1 = ps(:, 1:2001);
-    ps2 = ps(:, 2002:4002);
-    ps3 = ps(:, 4003:6003);
-    ps4 = ps(:, 6004:8004);
-    ps5 = ps(:, 8005:10005);
     
-    rts1 = rts(:, 1:2001);
-    rts2 = rts(:, 2002:4002);
-    rts3 = rts(:, 4003:6003);
-    rts4 = rts(:, 6004:8004);
-    rts5 = rts(:, 8005:10005);
+    ps1 = ps(:, 1);
+    ps2 = ps(:, 2);
+    ps3 = ps(:, 3);
+    ps4 = ps(:, 4);
+    ps5 = ps(:, 5);
+    
+    rts1 = rts(:, 1);
+    rts2 = rts(:, 2);
+    rts3 = rts(:, 3);
+    rts4 = rts(:, 4);
+    rts5 = rts(:, 5);
     
     t = 'Constant Drift Rate';
 elseif index == 3
