@@ -13,8 +13,8 @@ close all
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data, starting with 3rd column (subtract 2 from all indices
 %indicated above)
-PopBehavior = csvread('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141.csv', 1, 2); %block size 80
-Headings = load('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141_table.mat');
+PopBehavior = csvread('AudVisTask_v1_Diana_Sad_170606_1547.csv', 1, 2); %block size 80
+Headings = load('AudVisTask_v1_Diana_Sad_170606_1547_table.mat');
 h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix
@@ -309,6 +309,8 @@ Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
 %% Determine the best of the models
 %use BIC or AIC to determine the best fit model
 
+ err_indep = -100000000;
+ err_mu = -100000000;
 errors = [err_indep, err_mu, err_AB];
 aic = aicbic(errors, [5, 4, 3]);
 [~, index] = min(aic);
@@ -338,20 +340,21 @@ elseif index == 2
     
     t = 'Constant Drift Rate';
 elseif index == 3
-    [ps, rts] = fitBK_val_constBounds3L(cfax, fits_AB, [lapse1, lapse2, ...
+    M = repmat(cfax', 1, 5);
+    [ps, rts] = fitBK_val_constBounds3L(M, fits_AB, [lapse1, lapse2, ...
         lapse3, lapse4, lapse5]);
     
-    ps1 = ps(:, 1:2001);
-    ps2 = ps(:, 2002:4002);
-    ps3 = ps(:, 4003:6003);
-    ps4 = ps(:, 6004:8004);
-    ps5 = ps(:, 8005:10005);
+    ps1 = ps(:, 1);
+    ps2 = ps(:, 2);
+    ps3 = ps(:, 3);
+    ps4 = ps(:, 4);
+    ps5 = ps(:, 5);
     
-    rts1 = rts(:, 1:2001);
-    rts2 = rts(:, 2002:4002);
-    rts3 = rts(:, 4003:6003);
-    rts4 = rts(:, 6004:8004);
-    rts5 = rts(:, 8005:10005);
+    rts1 = rts(:, 1);
+    rts2 = rts(:, 2);
+    rts3 = rts(:, 3);
+    rts4 = rts(:, 4);
+    rts5 = rts(:, 5);
     
     t = 'Constant Both Bounds';
 end
@@ -583,31 +586,31 @@ elseif index == 3
     %%%block 1
     plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
     plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-    g1 = plot(cfax, rts1, 'k-');
+    g1 = plot(cfax, rts1', 'k-');
     plot([0 100], fits_AB([4 4]), 'k--');
     plot([-100 0], fits_AB([5 5]), 'k--');
     %%%block 2
     plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
     plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-    g2 = plot(cfax, rts2, 'r-');
+    g2 = plot(cfax, rts2', 'r-');
     plot([0 100], fits_AB([7 7]), 'r--');
     plot([-100 0], fits_AB([8 8]), 'r--');
     %%%block 3
     plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
     plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-    g3 = plot(cfax, rts3, 'b-');
+    g3 = plot(cfax, rts3', 'b-');
     plot([0 100], fits_AB([10 10]), 'b--');
     plot([-100 0], fits_AB([11 11]), 'b--');
     %%%block 4
     plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
     plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-    g4 = plot(cfax, rts4, 'g-');
+    g4 = plot(cfax, rts4', 'g-');
     plot([0 100], fits_AB([13 13]), 'g--');
     plot([-100 0], fits_AB([14 14]), 'g--');
     %%%block5
     plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
     plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-    g5 = plot(cfax, rts5, 'm-');
+    g5 = plot(cfax, rts5', 'm-');
     plot([0 100], fits_AB([16 16]), 'm--');
     plot([-100 0], fits_AB([17 17]), 'm--');
     
@@ -617,19 +620,19 @@ elseif index == 3
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), rts1(cfax<0)-fits1(5), 'k-');hold on;
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits1(5), 'k-');hold on;
     v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_AB(4), 'k-');
     %%%block 2
-    plot(cfax(cfax<0), rts2(cfax<0)-fits2(5), 'r-');hold on;
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits2(5), 'r-');hold on;
     v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_AB(7), 'r-');
     %%%block 3
-    plot(cfax(cfax<0), rts3(cfax<0)-fits3(5), 'b-');hold on;
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits3(5), 'b-');hold on;
     v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_AB(10), 'b-');
     %%%block 4
-    plot(cfax(cfax<0), rts4(cfax<0)-fits4(5), 'g-');hold on;
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits4(5), 'g-');hold on;
     v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_AB(13), 'g-');
     %%%block 5
-    plot(cfax(cfax<0), rts5(cfax<0)-fits5(5), 'm-');hold on;
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits5(5), 'm-');hold on;
     v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_AB(16), 'm-');
     
     xlabel('Coherence (%): +100 means all high tones')
