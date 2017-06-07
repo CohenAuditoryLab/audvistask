@@ -1,6 +1,5 @@
 function [task, list] = AudVisTask_v2(dispInd)
 %% 05-22-2017 created by Brianna - Auditory Visual Task
-% all 5 blocks with a break after block 3
 %% Setting up the screen
 
 isClient = false;
@@ -35,7 +34,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 5;
 % number of trials per visual mode
-block_rep = 80; %1 %15 %50 %75
+block_rep = 1; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'None', 'Low', 'High', 'All', 'Random'};
 
@@ -246,20 +245,40 @@ blocklabel = dotsDrawableText();
 blocklabel.string = sprintf('Block Number 1 of 5');
 blocklabel.typefaceName = 'Calibri';
 blocklabel.isVisible = false;
-blocklabel.x = 0;
 blocklabel.y = 5.5;
 
+readyprompt1 = dotsDrawableText();
+readyprompt1.string = 'This task will consist of 5 blocks.';
+readyprompt1.fontSize = 32;
+readyprompt1.typefaceName = 'Calibri';
+readyprompt1.y = 4;
+readyprompt1.isVisible = true;
+
+readyprompt3 = dotsDrawableText();
+readyprompt3.string = 'Each block takes ~5-10 minutes.';
+readyprompt3.fontSize = 32;
+readyprompt3.typefaceName = 'Calibri';
+readyprompt3.y = 2;
+readyprompt3.isVisible = true;
+
 readyprompt = dotsDrawableText();
-readyprompt.string = 'Ready?';
-readyprompt.fontSize = 42;
+readyprompt.string = 'Feel free to take breaks between blocks.';
+readyprompt.fontSize = 30;
 readyprompt.typefaceName = 'Calibri';
 readyprompt.isVisible = true;
 
+infoprompt = dotsDrawableText();
+infoprompt.string = 'Use A to play each sound and L or R to respond.';
+infoprompt.fontSize = 24;
+infoprompt.typefaceName = 'Calibri';
+infoprompt.y = -2;
+infoprompt.isVisible = true;
+
 buttonprompt = dotsDrawableText();
-buttonprompt.string = 'press A to get started';
+buttonprompt.string = 'Ready? Press A to get started! ->';
 buttonprompt.fontSize = 24;
 buttonprompt.typefaceName = 'Calibri';
-buttonprompt.y = -2;
+buttonprompt.y = -4;
 buttonprompt.isVisible = true;
 
 readyprompt2 = dotsDrawableText();
@@ -295,6 +314,9 @@ button2 = ensemble.addObject(buttonprompt2);
 lowlabel = ensemble.addObject(lowlabel);
 highlabel = ensemble.addObject(highlabel);
 blocklabel = ensemble.addObject(blocklabel);
+ready1 = ensemble.addObject(readyprompt1);
+ready3 = ensemble.addObject(readyprompt3);
+info = ensemble.addObject(infoprompt);
 
 list{'Graphics'}{'ensemble'} = ensemble;
 list{'Graphics'}{'target'} = target;
@@ -334,7 +356,7 @@ hide = @(index) ensemble.setObjectProperty('isVisible', false, index); %hide ass
 prepareMachine = topsStateMachine();
 prepStates = {'name', 'entry', 'input', 'exit', 'timeout', 'next';
     'Ready', {},      {},      {@waitForCheckKey list},     0,       'Hide';
-    'Hide', {hide [ready button]}, {}, {}, 0, 'Finish'
+    'Hide', {hide [ready button ready1 ready3 info]}, {}, {}, 0, 'Finish'
     'Finish', {}, {}, {}, 0, '';};
 prepareMachine.addMultipleStates(prepStates);
 
