@@ -40,7 +40,11 @@ cbins = [ ...
 %calculate number of coherence bins
 nbins = size(cbins,1);
 %calculate average value of each coherence bin - output vector
-cax   = mean(cbins,2);
+cax1   = mean(cbins,2);
+cax2   = mean(cbins,2);
+cax3   = mean(cbins,2);
+cax4   = mean(cbins,2);
+cax5   = mean(cbins,2);
 %create vector from -100 to 100
 cfax  = -100:.1:100;
 
@@ -306,13 +310,29 @@ Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
     X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
     'MaxIter', 30000, 'MaxFunEvals', 30000));
 
+%% Simultaneous curve fit, holding ONLY bound A constant 
+
+%define x0, lower and upper bounds
+X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
+    200 200 200 200];
+Xlb = [0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01...
+    0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01];
+Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
+    50000 50000 2000 2000 50000 50000 50000 2000 2000 50000];
+
+[fits_A, err_A] = fmincon(@(ft)fitBK_err_constBoundA(ft, data_all, ...
+    [lapse1, lapse2, lapse3, lapse4, lapse5]), X0, [], [], [], [], ...
+    Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
+    'MaxFunEvals', 30000));
+
 %% Determine the best of the models
 %use BIC or AIC to determine the best fit model
 
 %  err_indep = -100000000;
 %  err_AB = -100000000;
-errors = [err_indep, err_mu, err_AB];
-aic = aicbic(errors, [5, 4, 3]);
+%  err_mu = -100000000;
+errors = [err_indep, err_mu, err_AB, err_A];
+aic = aicbic(errors, [5, 4, 3, 4]);
 [~, index] = min(aic);
 
 if index == 1
@@ -359,6 +379,24 @@ elseif index == 3
     rts5 = rts(:, 5);
     
     t = 'Constant Both Bounds';
+elseif index == 4
+    M = repmat(cfax', 1, 5);
+    [ps, rts] = fitBK_val_constBoundA4L(M, fits_A, [lapse1, lapse2, lapse3, ...
+        lapse4, lapse5]);
+    
+    ps1 = ps(:, 1);
+    ps2 = ps(:, 2);
+    ps3 = ps(:, 3);
+    ps4 = ps(:, 4);
+    ps5 = ps(:, 5);
+    
+    rts1 = rts(:, 1);
+    rts2 = rts(:, 2);
+    rts3 = rts(:, 3);
+    rts4 = rts(:, 4);
+    rts5 = rts(:, 5);
+    
+    t = 'Constant Bound A';
 end
 %% PLOTZ
 
@@ -455,8 +493,8 @@ if index == 1
     ylabel('Decision time (ms): RT-nonDT')
     legend([v1 v2 v3 v4 v5],[block1 block2 block3 block4 block5])
     
-    %CONSTANT DRIFT
-elseif index == 2
+    %CONSTANT DRIFT or CONSTANT BOUND A
+elseif index == 2 || index == 4
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
