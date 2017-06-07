@@ -23,9 +23,7 @@ function err_ = fitBK_err_constDrift(fits, data, lapse)
 % 3rd column: response time (sec)
 % 4th column: correct
 % 
-% %cohs  = -100:.1:100;
 cohs = [data(:,1), data(:,5), data(:,9), data(:,13), data(:,17)];
-% %cohs = (linspace(-100,100,80))';
 [ps, rts] = fitBK_val_constDrift4L(cohs, fits, lapse);
 % [ps1, rts1] = fitBK_val_constDrift4L(data(:,1), fits, lapse);
 % [ps2, rts2] = fitBK_val_constDrift4L(data(:,5), fits, lapse);
