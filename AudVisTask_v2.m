@@ -79,7 +79,7 @@ list{'Counter'}{'trial'} = 0;
 
 %possible coherences
 %most data should be collected between about 25 and 75
-coherences = [0, .25, .33, .40, .50, .60, .67, .75, 1];
+coherences = [0, .1, .25, .33, .40, .50, .60, .67, .75, .9, 1];
 
 for i = 1:nTrials
     %add coherence as a condition
@@ -89,7 +89,7 @@ for i = 1:nTrials
     tmp_coh.addAssignment('cohLevel', likesCohLevel, '.', 'name');
 
     %randomly generate a coherence
-    index = randsample(9,1);
+    index = randsample(11,1);
     c = coherences(index);
     cohLevels(i) = c;
 end 
@@ -97,8 +97,8 @@ end
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
-hd.loFreq = 5000; %hz      312.5 |  625 | 1250 | 2500 |  5000
-hd.hiFreq = 20000; %hz     625   | 1250 | 2500 | 5000 | 10000
+hd.loFreq = 4500; %hz      312.5 |  625 | 1250 | 2500 |  5000
+hd.hiFreq = 21000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
 hd.trialDur = 4000; %ms
@@ -424,7 +424,14 @@ end
 
 function startEndTask(list)
     ensemble = list{'Graphics'}{'ensemble'};
-
+    low = list{'Graphics'}{'low'};
+    high = list{'Graphics'}{'high'};
+    block = list{'Graphics'}{'block'};
+    
+    ensemble.setObjectProperty('isVisible', false, low);
+    ensemble.setObjectProperty('isVisible', false, high);
+    ensemble.setObjectProperty('isVisible', false, block);
+    
     corrects = list{'Input'}{'corrects'};
     %calculate performance
     perf = 100*sum(corrects)/length(corrects);
@@ -459,7 +466,7 @@ function startTrial(list, block_rep)
     
     ensemble.setObjectProperty('isVisible', false, block);
     
-    b = int16(counter/(block_rep));
+    b = int16(ceil((counter/block_rep)));
     block = dotsDrawableText();
     block.string = sprintf('Block %d of 5', b);
     block.typefaceName = 'Calibri';
@@ -560,7 +567,9 @@ function string = waitForChoiceKey(list)
 
             %get the timestamp of the stimulus stop time 
             stim_stop = list{'Timestamps'}{'stim_stop'};
-            stim_stop(counter) = player.stopTime;
+            if length(player.stopTime) == 1
+                stim_stop(counter) = player.stopTime;
+            end
             list{'Timestamps'}{'stim_stop'} = stim_stop;
         end 
     end

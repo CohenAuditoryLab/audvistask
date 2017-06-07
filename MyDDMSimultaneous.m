@@ -13,9 +13,9 @@ close all
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data, starting with 3rd column (subtract 2 from all indices
 %indicated above)
-PopBehavior = csvread('AudVisTask_v1_Diana_Sad_170606_1547.csv', 1, 2);
+PopBehavior = csvread('AudVisTask_v2_Brianna1_v2_170607_1613.csv', 1, 2);
 %csvread('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141.csv', 1, 2); %block size 80
-Headings = load('AudVisTask_v1_Diana_Sad_170606_1547_table.mat');
+Headings = load('AudVisTask_v2_Brianna1_v2_170607_1613_table.mat');
 %load('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141_table.mat');
 h = Headings.data_table_stim(:, 2);
 
