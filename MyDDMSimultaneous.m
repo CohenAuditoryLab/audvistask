@@ -310,7 +310,7 @@ Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
     X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
     'MaxIter', 30000, 'MaxFunEvals', 30000));
 
-%% Simultaneous curve fit, holding ONLY bound A constant 
+%% Simultaneous curve fit, holding ONLY bound A constant
 
 %define x0, lower and upper bounds
 X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
@@ -325,14 +325,31 @@ Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
     Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
     'MaxFunEvals', 30000));
 
+%% Simultaneous curve fit, holding ONLY bound B constant 
+
+%define x0, lower and upper bounds
+X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
+    200 200 200 200];
+Xlb = [0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01...
+    0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01];
+Xub = [50000 50000 50000 2000 2000 50000 50000 50000 2000 2000 50000, ...
+    50000 50000 2000 2000 50000 50000 50000 2000 2000 50000];
+
+[fits_B, err_B] = fmincon(@(fitt)fitBK_err_constBoundB(fitt, data_all, ...
+    [lapse1, lapse2, lapse3, lapse4, lapse5]), X0, [], [], [], [], ...
+    Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
+    'MaxFunEvals', 30000));
+
 %% Determine the best of the models
 %use BIC or AIC to determine the best fit model
 
-%  err_indep = -100000000;
-%  err_AB = -100000000;
-%  err_mu = -100000000;
-errors = [err_indep, err_mu, err_AB, err_A];
-aic = aicbic(errors, [5, 4, 3, 4]);
+% err_indep = -100000000;
+% err_AB = -100000000;
+% err_mu = -100000000;
+% err_A = -100000000;
+% err_B = -100000000;
+errors = [err_indep, err_mu, err_AB, err_A, err_B];
+aic = aicbic(errors, [5, 4, 3, 4, 4]);
 [~, index] = min(aic);
 
 if index == 1
@@ -397,6 +414,24 @@ elseif index == 4
     rts5 = rts(:, 5);
     
     t = 'Constant Bound A';
+elseif index == 5
+    M = repmat(cfax', 1, 5);
+    [ps, rts] = fitBK_val_constBoundB4L(M, fits_B, [lapse1, lapse2, lapse3, ...
+        lapse4, lapse5]);
+    
+    ps1 = ps(:, 1);
+    ps2 = ps(:, 2);
+    ps3 = ps(:, 3);
+    ps4 = ps(:, 4);
+    ps5 = ps(:, 5);
+    
+    rts1 = rts(:, 1);
+    rts2 = rts(:, 2);
+    rts3 = rts(:, 3);
+    rts4 = rts(:, 4);
+    rts5 = rts(:, 5);
+    
+    t = 'Constant Bound B';
 end
 %% PLOTZ
 
@@ -493,8 +528,8 @@ if index == 1
     ylabel('Decision time (ms): RT-nonDT')
     legend([v1 v2 v3 v4 v5],[block1 block2 block3 block4 block5])
     
-    %CONSTANT DRIFT or CONSTANT BOUND A
-elseif index == 2 || index == 4
+%CONSTANT DRIFT
+elseif index == 2
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
@@ -567,19 +602,19 @@ elseif index == 2 || index == 4
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), rts1(cfax<0)-fits1(5), 'k-');hold on;
+    plot(cfax(cfax<0), rts1(cfax<0)-fits_mu(5), 'k-');hold on;
     v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_mu(4), 'k-');
     %%%block 2
-    plot(cfax(cfax<0), rts2(cfax<0)-fits2(5), 'r-');hold on;
+    plot(cfax(cfax<0), rts2(cfax<0)-fits_mu(9), 'r-');hold on;
     v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_mu(8), 'r-');
     %%%block 3
-    plot(cfax(cfax<0), rts3(cfax<0)-fits3(5), 'b-');hold on;
+    plot(cfax(cfax<0), rts3(cfax<0)-fits_mu(13), 'b-');hold on;
     v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_mu(12), 'b-');
     %%%block 4
-    plot(cfax(cfax<0), rts4(cfax<0)-fits4(5), 'g-');hold on;
+    plot(cfax(cfax<0), rts4(cfax<0)-fits_mu(17), 'g-');hold on;
     v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_mu(16), 'g-');
     %%%block 5
-    plot(cfax(cfax<0), rts5(cfax<0)-fits5(5), 'm-');hold on;
+    plot(cfax(cfax<0), rts5(cfax<0)-fits_mu(21), 'm-');hold on;
     v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_mu(20), 'm-');
     
     xlabel('Coherence (%): +100 means all high tones')
@@ -660,24 +695,211 @@ elseif index == 3
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), (rts1(cfax<0))'-fits1(5), 'k-');hold on;
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_AB(5), 'k-');hold on;
     v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_AB(4), 'k-');
     %%%block 2
-    plot(cfax(cfax<0), (rts2(cfax<0))'-fits2(5), 'r-');hold on;
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_AB(8), 'r-');hold on;
     v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_AB(7), 'r-');
     %%%block 3
-    plot(cfax(cfax<0), (rts3(cfax<0))'-fits3(5), 'b-');hold on;
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_AB(11), 'b-');hold on;
     v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_AB(10), 'b-');
     %%%block 4
-    plot(cfax(cfax<0), (rts4(cfax<0))'-fits4(5), 'g-');hold on;
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_AB(14), 'g-');hold on;
     v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_AB(13), 'g-');
     %%%block 5
-    plot(cfax(cfax<0), (rts5(cfax<0))'-fits5(5), 'm-');hold on;
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_AB(17), 'm-');hold on;
     v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_AB(16), 'm-');
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
     legend([v1 v2 v3 v4 v5],[block1 block2 block3 block4 block5])
+    
+%CONSTANT BOUND A
+elseif index == 4
+    subplot(3,1,1); cla reset; hold on;
+    %%%block 1
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    p1 = plot(cfax, ps1.*100, 'k-');
+    plot([-100 0], [lapse1*100 lapse1*100], 'k--');
+    plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
+    %%%block 2
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    p2 = plot(cfax, ps2.*100, 'r-');
+    plot([-100 0], [lapse2*100 lapse2*100], 'r--');
+    plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
+    %%%block 3
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
+    plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
+    %%%block 4
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    p4 = plot(cfax, ps4.*100, 'g-');
+    plot([-100 0], [lapse4*100 lapse4*100], 'g--');
+    plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
+    %%%block5
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    p5 = plot(cfax, ps5.*100, 'm-');
+    plot([-100 0], [lapse5*100 lapse5*100], 'm--');
+    plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('high-tone choice (%)')
+    legend([p1, p2, p3, p4, p5], [block1, block2, block3, block4, block5])
+    title(t);
+    
+    %Horizontal shifts of these lines imply changes in the mean rate-of-rise
+    %swivels about a fixed point at infinite RT imply changes in the bound height
+    subplot(3,1,2); cla reset; hold on;
+    %%%block 1
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    g1 = plot(cfax, rts1', 'k-');
+    plot([0 100], fits_A([4 4]), 'k--');
+    plot([-100 0], fits_A([5 5]), 'k--');
+    %%%block 2
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    g2 = plot(cfax, rts2', 'r-');
+    plot([0 100], fits_A([8 8]), 'r--');
+    plot([-100 0], fits_A([9 9]), 'r--');
+    %%%block 3
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    g3 = plot(cfax, rts3', 'b-');
+    plot([0 100], fits_A([12 12]), 'b--');
+    plot([-100 0], fits_A([13 13]), 'b--');
+    %%%block 4
+    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
+    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
+    g4 = plot(cfax, rts4', 'g-');
+    plot([0 100], fits_A([16 16]), 'g--');
+    plot([-100 0], fits_A([17 17]), 'g--');
+    %%%block5
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    g5 = plot(cfax, rts5', 'm-');
+    plot([0 100], fits_A([20 20]), 'm--');
+    plot([-100 0], fits_A([21 21]), 'm--');
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Response time (ms)')
+    legend([g1, g2, g3, g4, g5], [block1, block2, block3, block4, block5])
+    
+    subplot(3,1,3); cla reset; hold on;
+    %%%block 1
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_A(5), 'k-');hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_A(4), 'k-');
+    %%%block 2
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_A(9), 'r-');hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_A(8), 'r-');
+    %%%block 3
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_A(13), 'b-');hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_A(12), 'b-');
+    %%%block 4
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_A(17), 'g-');hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_A(16), 'g-');
+    %%%block 5
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_A(21), 'm-');hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_A(20), 'm-');
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Decision time (ms): RT-nonDT')
+    legend([v1 v2 v3 v4 v5],[block1 block2 block3 block4 block5])
+
+%CONSTANT BOUND B
+elseif index == 5
+    subplot(3,1,1); cla reset; hold on;
+    %%%block 1
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    p1 = plot(cfax, ps1.*100, 'k-');
+    plot([-100 0], [lapse1*100 lapse1*100], 'k--');
+    plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
+    %%%block 2
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    p2 = plot(cfax, ps2.*100, 'r-');
+    plot([-100 0], [lapse2*100 lapse2*100], 'r--');
+    plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
+    %%%block 3
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
+    plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
+    %%%block 4
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    p4 = plot(cfax, ps4.*100, 'g-');
+    plot([-100 0], [lapse4*100 lapse4*100], 'g--');
+    plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
+    %%%block5
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    p5 = plot(cfax, ps5.*100, 'm-');
+    plot([-100 0], [lapse5*100 lapse5*100], 'm--');
+    plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('high-tone choice (%)')
+    legend([p1, p2, p3, p4, p5], [block1, block2, block3, block4, block5])
+    title(t);
+    
+    %Horizontal shifts of these lines imply changes in the mean rate-of-rise
+    %swivels about a fixed point at infinite RT imply changes in the bound height
+    subplot(3,1,2); cla reset; hold on;
+    %%%block 1
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    g1 = plot(cfax, rts1', 'k-');
+    plot([0 100], fits_B([4 4]), 'k--');
+    plot([-100 0], fits_B([5 5]), 'k--');
+    %%%block 2
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    g2 = plot(cfax, rts2', 'r-');
+    plot([0 100], fits_B([8 8]), 'r--');
+    plot([-100 0], fits_B([9 9]), 'r--');
+    %%%block 3
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    g3 = plot(cfax, rts3', 'b-');
+    plot([0 100], fits_B([12 12]), 'b--');
+    plot([-100 0], fits_B([13 13]), 'b--');
+    %%%block 4
+    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
+    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
+    g4 = plot(cfax, rts4', 'g-');
+    plot([0 100], fits_B([16 16]), 'g--');
+    plot([-100 0], fits_B([17 17]), 'g--');
+    %%%block5
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    g5 = plot(cfax, rts5', 'm-');
+    plot([0 100], fits_B([20 20]), 'm--');
+    plot([-100 0], fits_B([21 21]), 'm--');
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Response time (ms)')
+    legend([g1, g2, g3, g4, g5], [block1, block2, block3, block4, block5])
+    
+    subplot(3,1,3); cla reset; hold on;
+    %%%block 1
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_B(5), 'k-');hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_B(4), 'k-');
+    %%%block 2
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_B(9), 'r-');hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_B(8), 'r-');
+    %%%block 3
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_B(13), 'b-');hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_B(12), 'b-');
+    %%%block 4
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_B(17), 'g-');hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_B(16), 'g-');
+    %%%block 5
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_B(21), 'm-');hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_B(20), 'm-');
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Decision time (ms): RT-nonDT')
+    legend([v1 v2 v3 v4 v5],[block1 block2 block3 block4 block5])
+
 end
 
 end
