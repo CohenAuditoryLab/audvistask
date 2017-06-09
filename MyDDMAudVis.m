@@ -59,7 +59,7 @@ Behavior3 = PopBehavior(2*block_size+1:3*block_size, :);
 Behavior4 = PopBehavior(3*block_size+1:4*block_size, :);
 Behavior5 = PopBehavior(4*block_size+1:5*block_size, :);
 %enter file for fit functions
-cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/DDM/');
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/');
 
 %calculate number of trials 
 ntrials = block_size;

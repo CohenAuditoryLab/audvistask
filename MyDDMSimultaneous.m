@@ -9,14 +9,13 @@ function MyDDMSimultaneous(block_size)
 
 close all
 
-%cd into file that holds data
+%cd into file that holds data 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
-%load in data, starting with 3rd column (subtract 2 from all indices
-%indicated above)
-PopBehavior = csvread('AudVisTask_v2_Brianna1_v2_170607_1613.csv', 1, 2);
-%csvread('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141.csv', 1, 2); %block size 80
-Headings = load('AudVisTask_v2_Brianna1_v2_170607_1613_table.mat');
-%load('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141_table.mat');
+%load in data
+PopBehavior = csvread('DDM_AudVisTask_v1_Diana_Sad_170606_1547.csv', 1, 0); %block size 25
+%csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
+%csvread('SampleData.csv'); %block size 15
+Headings = load('AudVisTask_v1_Diana_Sad_170606_1547_table.mat');
 h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix
@@ -27,46 +26,63 @@ block4 = h{3*block_size + 1,1};
 block5 = h{4*block_size + 1, 1};
 
 %coherence bins
-% cbins = [ ...
-%     -100  -99
-%     -99   -50
-%     -50   -34
-%     -34   -20
-%     -20     0
-%       0    20
-%      20    34
-%      34    50
-%      50    99
-%      99   100];
- 
- cbins = [ ...
+cbins = [ ...
     -100  -99
-     -99  -80
-     -80  -65
-     -65  -50
-     -50  -34
-     -34  -20
-     -20  -10
-     -10    0
-       0   10
-      10   20
-      20   34
-      34   50
-      50   65
-      65   80
-      80   99
-      99  100];
+    -99   -50
+    -50   -34
+    -34   -20
+    -20   -10
+    -10    10
+     10    20
+     20    34
+     34    50
+     50    99
+     99   100];
+  
+%  cbins = [ ...
+%     -100  -99
+%      -99  -80
+%      -80  -65
+%      -65  -50
+%      -50  -34
+%      -34  -20
+%      -20  -10
+%      -10   10
+%       10   20
+%       20   34
+%       34   50
+%       50   65
+%       65   80
+%       80   99
+%       99  100];
+  
+% %coherence bins
+% cbins = [ ...
+%    -100   -99
+%     -99   -60
+%     -60   -20
+%     -20    20
+%      20    60
+%      60   100
+%     100   101];
 
-%calculate number of coherence bins
+%calculate number of coherence bins 
 nbins = size(cbins,1);
-%calculate average value of each coherence bin - output vector
-cax1   = mean(cbins,2);
-cax2   = mean(cbins,2);
-cax3   = mean(cbins,2);
-cax4   = mean(cbins,2);
-cax5   = mean(cbins,2);
+%calculate average value of each coherence bin - output vector 
+cax   = mean(cbins,2);
 %create vector from -100 to 100
 cfax  = -100:.1:100;
+%initialize vectors to hold pmf and cmf values
+pmf1   = NaN(nbins,1);
+cmf1   = NaN(nbins,2);
+pmf2   = NaN(nbins,1);
+cmf2   = NaN(nbins,2);
+pmf3   = NaN(nbins,1);
+cmf3   = NaN(nbins,2);
+pmf4   = NaN(nbins,1);
+cmf4   = NaN(nbins,2);
+pmf5   = NaN(nbins,1);
+cmf5   = NaN(nbins,2);
 
 %set data to variable
 Behavior1 = PopBehavior(1:block_size, :);
@@ -78,17 +94,17 @@ Behavior5 = PopBehavior(4*block_size+1:5*block_size, :);
 %enter file for fit functions
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/');
 
-%calculate number of trials
+%calculate number of trials 
 ntrials = block_size;
 
 %% Data formatting
 
-%create vector of true = high false = low; ensures all values are 0 or 1
-Lch1     = Behavior1(:,6) == 2;
-Lch2     = Behavior2(:,6) == 2;
-Lch3     = Behavior3(:,6) == 2;
-Lch4     = Behavior4(:,6) == 2;
-Lch5     = Behavior5(:,6) == 2;
+%create vector of true = high false = low; ensures all values are 0 or 1 
+Lch1     = Behavior1(:,2)==1;
+Lch2     = Behavior2(:,2)==1;
+Lch3     = Behavior3(:,2)==1;
+Lch4     = Behavior4(:,2)==1;
+Lch5     = Behavior5(:,2)==1;
 
 % create a data matrix for each visual mode, columns are:
 %   1. re-scale signal strength to [-100, 100]
@@ -96,23 +112,23 @@ Lch5     = Behavior5(:,6) == 2;
 %   3. RT (ms)
 %   4. correct (1) or error (0)
 
-scoh1 = Behavior1(:,2).*200-100;
-Lcor1 = Behavior1(:,7);
-data1 = cat(2, scoh1, Behavior1(:,6) - 1, Behavior1(:,11), double(Lcor1));
-scoh2 = Behavior2(:,2).*200-100;
-Lcor2 = Behavior2(:,7);
-data2 = cat(2, scoh2, Behavior2(:,6) - 1, Behavior2(:,11), double(Lcor2));
-scoh3 = Behavior3(:,2).*200-100;
-Lcor3 = Behavior3(:,7);
-data3 = cat(2, scoh3, Behavior3(:,6) - 1, Behavior3(:,11), double(Lcor3));
-scoh4 = Behavior4(:,2).*200-100;
-Lcor4 = Behavior4(:,7);
-data4 = cat(2, scoh4, Behavior4(:,6) - 1, Behavior4(:,11), double(Lcor4));
-scoh5 = Behavior5(:,2).*200-100;
-Lcor5 = Behavior5(:,7);
-data5 = cat(2, scoh5, Behavior5(:,6) - 1, Behavior5(:,11), double(Lcor5));
+scoh1 = Behavior1(:,1).*200-100;
+Lcor1 = Behavior1(:,4); %(Behavior(:,1)>= -20 & Behavior(:,1)<20) | (Behavior(:,1)>50&Lch) | (Behavior(:,1)<50&~Lch);
+data1 = cat(2, scoh1, Behavior1(:,2), Behavior1(:,3), double(Lcor1));
+scoh2 = Behavior2(:,1).*200-100;
+Lcor2 = Behavior2(:,4); 
+data2 = cat(2, scoh2, Behavior2(:,2), Behavior2(:,3), double(Lcor2));
+scoh3 = Behavior3(:,1).*200-100;
+Lcor3 = Behavior3(:,4); 
+data3 = cat(2, scoh3, Behavior3(:,2), Behavior3(:,3), double(Lcor3));
+scoh4 = Behavior4(:,1).*200-100;
+Lcor4 = Behavior4(:,4); 
+data4 = cat(2, scoh4, Behavior4(:,2), Behavior4(:,3), double(Lcor4));
+scoh5 = Behavior5(:,1).*200-100;
+Lcor5 = Behavior5(:,4); 
+data5 = cat(2, scoh5, Behavior5(:,2), Behavior5(:,3), double(Lcor5));
 
-%calculate lapse
+%calculate lapse to account for subject not paying attention
 Llapse1 = abs(scoh1)>=90;
 lapse1 = 1-sum(Llapse1&Lcor1)./sum(Llapse1);
 Llapse2 = abs(scoh2)>=90;
@@ -175,7 +191,7 @@ for cc = 1:nbins
     cmf4(cc,2) = nanmean(data4(Lcoh4(:,cc)&~Lch4,3));
 end
 
-Lcoh5 = false(ntrials, nbins);
+Lcoh5  = false(ntrials, nbins);
 for cc = 1:nbins
     Lcoh5(:,cc) = scoh5>=cbins(cc,1) & scoh5<cbins(cc,2);
     cax5(cc) = mean(scoh5(Lcoh5(:,cc)));
@@ -200,19 +216,19 @@ err0_5 = fitJT_err(X0, data5, lapse5);
 % fit it using pattern search
 [fits1,err1] = patternsearch(@(x)fitJT_err(x, data1, lapse1), ...
     X0, [], [], [], [], Xlb, Xub, [], ...
-    psoptimset('MaxIter', 10000, 'MaxFunEvals', 5000));
+    psoptimset('MaxIter', 5000, 'MaxFunEvals', 5000));
 [fits2,err2] = patternsearch(@(x)fitJT_err(x, data2, lapse2), ...
     X0, [], [], [], [], Xlb, Xub, [], ...
-    psoptimset('MaxIter', 10000, 'MaxFunEvals', 5000));
+    psoptimset('MaxIter', 5000, 'MaxFunEvals', 5000));
 [fits3,err3] = patternsearch(@(x)fitJT_err(x, data3, lapse3), ...
     X0, [], [], [], [], Xlb, Xub, [], ...
-    psoptimset('MaxIter', 10000, 'MaxFunEvals', 5000));
+    psoptimset('MaxIter', 5000, 'MaxFunEvals', 5000));
 [fits4,err4] = patternsearch(@(x)fitJT_err(x, data4, lapse4), ...
     X0, [], [], [], [], Xlb, Xub, [], ...
-    psoptimset('MaxIter', 10000, 'MaxFunEvals', 5000));
+    psoptimset('MaxIter', 5000, 'MaxFunEvals', 5000));
 [fits5,err5] = patternsearch(@(x)fitJT_err(x, data5, lapse5), ...
     X0, [], [], [], [], Xlb, Xub, [], ...
-    psoptimset('MaxIter', 10000, 'MaxFunEvals', 5000));
+    psoptimset('MaxIter', 5000, 'MaxFunEvals', 5000));
 
 % possibly seed as init values
 if err1 < err0_1
@@ -254,23 +270,23 @@ end
 [fitsg1,errg1] = fmincon(@(x)fitJT_err(x, data1, lapse1), ...
     X0g1, [], [], [], [], Xlb, Xub, [], ...
     optimset('Algorithm', 'active-set', ...
-    'MaxIter', 30000, 'MaxFunEvals', 40000));%, 'Display', 'iter'));
+    'MaxIter', 30000, 'MaxFunEvals', 30000));%, 'Display', 'iter'));
 [fitsg2,errg2] = fmincon(@(x)fitJT_err(x, data2, lapse2), ...
     X0g2, [], [], [], [], Xlb, Xub, [], ...
     optimset('Algorithm', 'active-set', ...
-    'MaxIter', 30000, 'MaxFunEvals', 40000));%, 'Display', 'iter'));
+    'MaxIter', 30000, 'MaxFunEvals', 30000));%, 'Display', 'iter'));
 [fitsg3,errg3] = fmincon(@(x)fitJT_err(x, data3, lapse3), ...
     X0g3, [], [], [], [], Xlb, Xub, [], ...
     optimset('Algorithm', 'active-set', ...
-    'MaxIter', 30000, 'MaxFunEvals', 40000));%, 'Display', 'iter'));
+    'MaxIter', 30000, 'MaxFunEvals', 30000));%, 'Display', 'iter'));
 [fitsg4,errg4] = fmincon(@(x)fitJT_err(x, data4, lapse4), ...
     X0g4, [], [], [], [], Xlb, Xub, [], ...
     optimset('Algorithm', 'active-set', ...
-    'MaxIter', 30000, 'MaxFunEvals', 40000));%, 'Display', 'iter'));
+    'MaxIter', 30000, 'MaxFunEvals', 30000));%, 'Display', 'iter'));
 [fitsg5,errg5] = fmincon(@(x)fitJT_err(x, data5, lapse5), ...
     X0g5, [], [], [], [], Xlb, Xub, [], ...
     optimset('Algorithm', 'active-set', ...
-    'MaxIter', 30000, 'MaxFunEvals', 40000));%, 'Display', 'iter'));
+    'MaxIter', 30000, 'MaxFunEvals', 30000));%, 'Display', 'iter'));
 
 % save the best fit between the two methods
 if errg1 < err0_1
@@ -408,9 +424,11 @@ end
 % err_mu = -100000000;
 % err_A = -100000000;
 % err_B = -100000000;
+
+%%%BIC is "harsher" on free parameters than AIC
 errors = [err_indep, err_mu, err_AB, err_A, err_B];
-aic = aicbic(errors, [5, 4, 3, 4, 4]);
-[~, index] = min(aic);
+[aic, bic] = aicbic(errors, [5, 4, 3, 4, 4], block_size .* ones(5,1));
+[~, index] = min(bic);
 
 if index == 1
     [ps1,rts1] = fitJT_val_simple5L(cfax, fits1, lapse1);
@@ -495,32 +513,33 @@ elseif index == 5
 end
 %% PLOTZ
 
+figure()
 %INDEPENDENT
 if index == 1
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
-    p1 = plot(cfax, ps1.*100, 'k-');
+    p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
     plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
-    p2 = plot(cfax, ps2.*100, 'r-');
+    p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
     plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
-    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75);
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
     plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
-    p4 = plot(cfax, ps4.*100, 'g-');
+    p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
     plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
-    p5 = plot(cfax, ps5.*100, 'm-');
+    p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
     
@@ -535,31 +554,31 @@ if index == 1
     %%%block 1
     plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
     plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-    g1 = plot(cfax, rts1, 'k-');
+    g1 = plot(cfax, rts1, 'k-', 'LineWidth', 0.75);
     plot([0 100], fits1([4 4]), 'k--');
     plot([-100 0], fits1([5 5]), 'k--');
     %%%block 2
     plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
     plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-    g2 = plot(cfax, rts2, 'r-');
+    g2 = plot(cfax, rts2, 'r-', 'LineWidth', 0.75);
     plot([0 100], fits2([4 4]), 'r--');
     plot([-100 0], fits2([5 5]), 'r--');
     %%%block 3
     plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
     plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-    g3 = plot(cfax, rts3, 'b-');
+    g3 = plot(cfax, rts3, 'b-', 'LineWidth', 0.75);
     plot([0 100], fits3([4 4]), 'b--');
     plot([-100 0], fits3([5 5]), 'b--');
     %%%block 4
     plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
     plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-    g4 = plot(cfax, rts4, 'g-');
+    g4 = plot(cfax, rts4, 'g-', 'LineWidth', 0.75);
     plot([0 100], fits4([4 4]), 'g--');
     plot([-100 0], fits4([5 5]), 'g--');
     %%%block5
     plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
     plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-    g5 = plot(cfax, rts5, 'm-');
+    g5 = plot(cfax, rts5, 'm-', 'LineWidth', 0.75);
     plot([0 100], fits5([4 4]), 'm--');
     plot([-100 0], fits5([5 5]), 'm--');
     
@@ -569,20 +588,20 @@ if index == 1
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), rts1(cfax<0)-fits1(5), 'k-');hold on;
-    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits1(4), 'k-');
+    plot(cfax(cfax<0), rts1(cfax<0)-fits1(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits1(4), 'k-', 'LineWidth', 0.75);
     %%%block 2
-    plot(cfax(cfax<0), rts2(cfax<0)-fits2(5), 'r-');hold on;
-    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits2(4), 'r-');
+    plot(cfax(cfax<0), rts2(cfax<0)-fits2(5), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits2(4), 'r-', 'LineWidth', 0.75);
     %%%block 3
-    plot(cfax(cfax<0), rts3(cfax<0)-fits3(5), 'b-');hold on;
-    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits3(4), 'b-');
+    plot(cfax(cfax<0), rts3(cfax<0)-fits3(5), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits3(4), 'b-', 'LineWidth', 0.75);
     %%%block 4
-    plot(cfax(cfax<0), rts4(cfax<0)-fits4(5), 'g-');hold on;
-    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits4(4), 'g-');
+    plot(cfax(cfax<0), rts4(cfax<0)-fits4(5), 'g-', 'LineWidth', 0.75);hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits4(4), 'g-', 'LineWidth', 0.75);
     %%%block 5
-    plot(cfax(cfax<0), rts5(cfax<0)-fits5(5), 'm-');hold on;
-    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits5(4), 'm-');
+    plot(cfax(cfax<0), rts5(cfax<0)-fits5(5), 'm-', 'LineWidth', 0.75);hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits5(4), 'm-', 'LineWidth', 0.75);
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
@@ -593,27 +612,27 @@ elseif index == 2
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
-    p1 = plot(cfax, ps1.*100, 'k-');
+    p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
     plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
-    p2 = plot(cfax, ps2.*100, 'r-');
+    p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
     plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
-    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
     plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
-    p4 = plot(cfax, ps4.*100, 'g-');
+    p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
     plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
-    p5 = plot(cfax, ps5.*100, 'm-');
+    p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
     
@@ -628,31 +647,31 @@ elseif index == 2
     %%%block 1
     plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
     plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-    g1 = plot(cfax, rts1, 'k-');
+    g1 = plot(cfax, rts1, 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([4 4]), 'k--');
     plot([-100 0], fits_mu([5 5]), 'k--');
     %%%block 2
     plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
     plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-    g2 = plot(cfax, rts2, 'r-');
+    g2 = plot(cfax, rts2, 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([8 8]), 'r--');
     plot([-100 0], fits_mu([9 9]), 'r--');
     %%%block 3
     plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
     plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-    g3 = plot(cfax, rts3, 'b-');
+    g3 = plot(cfax, rts3, 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([12 12]), 'b--');
     plot([-100 0], fits_mu([13 13]), 'b--');
     %%%block 4
     plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
     plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-    g4 = plot(cfax, rts4, 'g-');
+    g4 = plot(cfax, rts4, 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([16 16]), 'g--');
     plot([-100 0], fits_mu([17 17]), 'g--');
     %%%block5
     plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
     plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-    g5 = plot(cfax, rts5, 'm-');
+    g5 = plot(cfax, rts5, 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([20 20]), 'm--');
     plot([-100 0], fits_mu([21 21]), 'm--');
     
@@ -662,20 +681,20 @@ elseif index == 2
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), rts1(cfax<0)-fits_mu(5), 'k-');hold on;
-    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_mu(4), 'k-');
+    plot(cfax(cfax<0), rts1(cfax<0)-fits_mu(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_mu(4), 'k-', 'LineWidth', 0.75);
     %%%block 2
-    plot(cfax(cfax<0), rts2(cfax<0)-fits_mu(9), 'r-');hold on;
-    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_mu(8), 'r-');
+    plot(cfax(cfax<0), rts2(cfax<0)-fits_mu(9), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_mu(8), 'r-', 'LineWidth', 0.75);
     %%%block 3
-    plot(cfax(cfax<0), rts3(cfax<0)-fits_mu(13), 'b-');hold on;
-    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_mu(12), 'b-');
+    plot(cfax(cfax<0), rts3(cfax<0)-fits_mu(13), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_mu(12), 'b-', 'LineWidth', 0.75);
     %%%block 4
-    plot(cfax(cfax<0), rts4(cfax<0)-fits_mu(17), 'g-');hold on;
-    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_mu(16), 'g-');
+    plot(cfax(cfax<0), rts4(cfax<0)-fits_mu(17), 'g-', 'LineWidth', 0.75);hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_mu(16), 'g-', 'LineWidth', 0.75);
     %%%block 5
-    plot(cfax(cfax<0), rts5(cfax<0)-fits_mu(21), 'm-');hold on;
-    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_mu(20), 'm-');
+    plot(cfax(cfax<0), rts5(cfax<0)-fits_mu(21), 'm-', 'LineWidth', 0.75);hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_mu(20), 'm-', 'LineWidth', 0.75);
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
@@ -686,27 +705,27 @@ elseif index == 3
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
-    p1 = plot(cfax, ps1.*100, 'k-');
+    p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
     plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
-    p2 = plot(cfax, ps2.*100, 'r-');
+    p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
     plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
-    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
     plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
-    p4 = plot(cfax, ps4.*100, 'g-');
+    p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
     plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
-    p5 = plot(cfax, ps5.*100, 'm-');
+    p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
     
@@ -721,31 +740,31 @@ elseif index == 3
     %%%block 1
     plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
     plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-    g1 = plot(cfax, rts1', 'k-');
+    g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([4 4]), 'k--');
     plot([-100 0], fits_AB([5 5]), 'k--');
     %%%block 2
     plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
     plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-    g2 = plot(cfax, rts2', 'r-');
+    g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([7 7]), 'r--');
     plot([-100 0], fits_AB([8 8]), 'r--');
     %%%block 3
     plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
     plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-    g3 = plot(cfax, rts3', 'b-');
+    g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([10 10]), 'b--');
     plot([-100 0], fits_AB([11 11]), 'b--');
     %%%block 4
     plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
     plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-    g4 = plot(cfax, rts4', 'g-');
+    g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([13 13]), 'g--');
     plot([-100 0], fits_AB([14 14]), 'g--');
     %%%block5
     plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
     plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-    g5 = plot(cfax, rts5', 'm-');
+    g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([16 16]), 'm--');
     plot([-100 0], fits_AB([17 17]), 'm--');
     
@@ -755,20 +774,20 @@ elseif index == 3
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_AB(5), 'k-');hold on;
-    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_AB(4), 'k-');
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_AB(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_AB(4), 'k-', 'LineWidth', 0.75);
     %%%block 2
-    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_AB(8), 'r-');hold on;
-    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_AB(7), 'r-');
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_AB(8), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_AB(7), 'r-', 'LineWidth', 0.75);
     %%%block 3
-    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_AB(11), 'b-');hold on;
-    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_AB(10), 'b-');
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_AB(11), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_AB(10), 'b-', 'LineWidth', 0.75);
     %%%block 4
-    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_AB(14), 'g-');hold on;
-    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_AB(13), 'g-');
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_AB(14), 'g-', 'LineWidth', 0.75);hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_AB(13), 'g-', 'LineWidth', 0.75);
     %%%block 5
-    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_AB(17), 'm-');hold on;
-    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_AB(16), 'm-');
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_AB(17), 'm-', 'LineWidth', 0.75);hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_AB(16), 'm-', 'LineWidth', 0.75);
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
@@ -779,27 +798,27 @@ elseif index == 4
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
-    p1 = plot(cfax, ps1.*100, 'k-');
+    p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
     plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
-    p2 = plot(cfax, ps2.*100, 'r-');
+    p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
     plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
-    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
     plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
-    p4 = plot(cfax, ps4.*100, 'g-');
+    p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
     plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
-    p5 = plot(cfax, ps5.*100, 'm-');
+    p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
     
@@ -814,31 +833,31 @@ elseif index == 4
     %%%block 1
     plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
     plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-    g1 = plot(cfax, rts1', 'k-');
+    g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_A([4 4]), 'k--');
     plot([-100 0], fits_A([5 5]), 'k--');
     %%%block 2
     plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
     plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-    g2 = plot(cfax, rts2', 'r-');
+    g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_A([8 8]), 'r--');
     plot([-100 0], fits_A([9 9]), 'r--');
     %%%block 3
     plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
     plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-    g3 = plot(cfax, rts3', 'b-');
+    g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_A([12 12]), 'b--');
     plot([-100 0], fits_A([13 13]), 'b--');
     %%%block 4
     plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
     plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-    g4 = plot(cfax, rts4', 'g-');
+    g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_A([16 16]), 'g--');
     plot([-100 0], fits_A([17 17]), 'g--');
     %%%block5
     plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
     plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-    g5 = plot(cfax, rts5', 'm-');
+    g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_A([20 20]), 'm--');
     plot([-100 0], fits_A([21 21]), 'm--');
     
@@ -848,20 +867,20 @@ elseif index == 4
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_A(5), 'k-');hold on;
-    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_A(4), 'k-');
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_A(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_A(4), 'k-', 'LineWidth', 0.75);
     %%%block 2
-    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_A(9), 'r-');hold on;
-    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_A(8), 'r-');
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_A(9), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_A(8), 'r-', 'LineWidth', 0.75);
     %%%block 3
-    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_A(13), 'b-');hold on;
-    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_A(12), 'b-');
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_A(13), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_A(12), 'b-', 'LineWidth', 0.75);
     %%%block 4
-    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_A(17), 'g-');hold on;
-    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_A(16), 'g-');
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_A(17), 'g-', 'LineWidth', 0.75);hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_A(16), 'g-', 'LineWidth', 0.75);
     %%%block 5
-    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_A(21), 'm-');hold on;
-    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_A(20), 'm-');
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_A(21), 'm-', 'LineWidth', 0.75);hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_A(20), 'm-', 'LineWidth', 0.75);
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
@@ -872,27 +891,27 @@ elseif index == 5
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
     plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
-    p1 = plot(cfax, ps1.*100, 'k-');
+    p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
     plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
-    p2 = plot(cfax, ps2.*100, 'r-');
+    p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
     plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
-    p3 = plot(cfax, ps3.*100, 'b-'); hold on;
+    p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
     plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
-    p4 = plot(cfax, ps4.*100, 'g-');
+    p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
     plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
-    p5 = plot(cfax, ps5.*100, 'm-');
+    p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
     
@@ -907,31 +926,31 @@ elseif index == 5
     %%%block 1
     plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
     plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
-    g1 = plot(cfax, rts1', 'k-');
+    g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_B([4 4]), 'k--');
     plot([-100 0], fits_B([5 5]), 'k--');
     %%%block 2
     plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
     plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
-    g2 = plot(cfax, rts2', 'r-');
+    g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_B([8 8]), 'r--');
     plot([-100 0], fits_B([9 9]), 'r--');
     %%%block 3
     plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
     plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
-    g3 = plot(cfax, rts3', 'b-');
+    g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_B([12 12]), 'b--');
     plot([-100 0], fits_B([13 13]), 'b--');
     %%%block 4
     plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
     plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
-    g4 = plot(cfax, rts4', 'g-');
+    g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_B([16 16]), 'g--');
     plot([-100 0], fits_B([17 17]), 'g--');
     %%%block5
     plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
     plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-    g5 = plot(cfax, rts5', 'm-');
+    g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_B([20 20]), 'm--');
     plot([-100 0], fits_B([21 21]), 'm--');
     
@@ -941,20 +960,20 @@ elseif index == 5
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
-    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_B(5), 'k-');hold on;
-    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_B(4), 'k-');
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_B(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_B(4), 'k-', 'LineWidth', 0.75);
     %%%block 2
-    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_B(9), 'r-');hold on;
-    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_B(8), 'r-');
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_B(9), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_B(8), 'r-', 'LineWidth', 0.75);
     %%%block 3
-    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_B(13), 'b-');hold on;
-    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_B(12), 'b-');
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_B(13), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_B(12), 'b-', 'LineWidth', 0.75);
     %%%block 4
-    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_B(17), 'g-');hold on;
-    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_B(16), 'g-');
+    plot(cfax(cfax<0), (rts4(cfax<0))'-fits_B(17), 'g-', 'LineWidth', 0.75);hold on;
+    v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_B(16), 'g-', 'LineWidth', 0.75);
     %%%block 5
-    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_B(21), 'm-');hold on;
-    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_B(20), 'm-');
+    plot(cfax(cfax<0), (rts5(cfax<0))'-fits_B(21), 'm-', 'LineWidth', 0.75);hold on;
+    v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_B(20), 'm-', 'LineWidth', 0.75);
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
