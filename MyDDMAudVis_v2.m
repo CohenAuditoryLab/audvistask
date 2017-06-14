@@ -1,5 +1,8 @@
 function MyDDMAudVis_v2(block_size)
 
+
+%%%%%%%%%%%%DON'T USE THIS IT FITS WORSE THAN VERSION 1
+
 % Data File being used:
 % 4th column: percentage of high tone (mapped this percentage to signed coherence like this: (proportion-50).*2)
 % 8th column: monkey's choice (2: high-tone choice, 1: low-tone choice)
@@ -9,11 +12,11 @@ function MyDDMAudVis_v2(block_size)
 close all
 
 %cd into file that holds data
-cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/Beta - 4 Modes/');
 %load in data, starting with 3rd column (subtract 2 from all indices
 %indicated above)
-PopBehavior = csvread('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141.csv', 1, 2); %block size 80
-Headings = load('AudVisTask_v1_Brianna_Beta_5Modes_170606_1141_table.mat');
+PopBehavior = csvread('AudVisTask_v1_Beta_Diana_170602_1142.csv', 1, 2); %block size 80
+Headings = load('AudVisTask_v1_Beta_Diana_170602_1142_table.mat');
 h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix
@@ -21,7 +24,7 @@ block1 = h{1, 1};
 block2 = h{block_size + 1,1};
 block3 = h{2*block_size + 1,1};
 block4 = h{3*block_size + 1,1};
-block5 = h{4*block_size + 1, 1};
+% block5 = h{4*block_size + 1, 1};
 
 %coherence bins
 % cbins = [ ...
@@ -33,32 +36,42 @@ block5 = h{4*block_size + 1, 1};
 %     60  100
 %     100  101];
 
+% cbins = [ ...
+%     -100  -99
+%      -99  -80
+%      -80  -65
+%      -65  -50
+%      -50  -34
+%      -34  -20
+%      -20  -10
+%      -10    0
+%        0   10
+%       10   20
+%       20   34
+%       34   50
+%       50   65
+%       65   80
+%       80   99
+%       99  100];
+
+%coherence bins
 cbins = [ ...
-    -100  -99
-     -99  -80
-     -80  -65
-     -65  -50
-     -50  -34
-     -34  -20
-     -20  -10
-     -10    0
-       0   10
-      10   20
-      20   34
-      34   50
-      50   65
-      65   80
-      80   99
-      99  100];
+   -100   -99
+    -99   -60
+    -60   -20
+    -20    20
+     20    60
+     60   100
+    100   101];
 
 %calculate number of coherence bins 
 nbins = size(cbins,1);
 %calculate average value of each coherence bin - output vector 
-cax1   = mean(cbins,2);
-cax2   = mean(cbins,2);
-cax3   = mean(cbins,2);
-cax4   = mean(cbins,2);
-cax5   = mean(cbins,2);
+cax   = mean(cbins,2);
+% cax2   = mean(cbins,2);
+% cax3   = mean(cbins,2);
+% cax4   = mean(cbins,2);
+% cax5   = mean(cbins,2);
 %create vector from -100 to 100
 cfax  = -100:.1:100;
 %initialize vectors to hold pmf and cmf values
@@ -76,41 +89,46 @@ Behavior1 = PopBehavior(1:block_size, :);
 Behavior2 = PopBehavior(block_size+1:2*block_size, :);
 Behavior3 = PopBehavior(2*block_size+1:3*block_size, :);
 Behavior4 = PopBehavior(3*block_size+1:4*block_size, :);
-Behavior5 = PopBehavior(4*block_size+1:5*block_size, :);
+% Behavior5 = PopBehavior(4*block_size+1:5*block_size, :);
 
 %enter file for fit functions
-cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/');
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/DDM/');
 
 %calculate number of trials
 ntrials = block_size;
 
 %create vector of true = high false = low; ensures all values are 0 or 1
-Lch1     = Behavior1(:,6) == 2;
-Lch2     = Behavior2(:,6) == 2;
-Lch3     = Behavior3(:,6) == 2;
-Lch4     = Behavior4(:,6) == 2;
-Lch5     = Behavior5(:,6) == 2;
+Lch1     = Behavior1(:,6) -1 == 1;
+Lch2     = Behavior2(:,6) -1 == 1;
+Lch3     = Behavior3(:,6) -1 == 1;
+Lch4     = Behavior4(:,6) -1 == 1;
+% Lch5     = Behavior5(:,6) == 2;
 
 % create a data matrix for each visual mode, columns are:
 %   1. re-scale signal strength to [-100, 100]
 %   2. choice (1: high-tone choice, 0: low-tone choice)
 %   3. RT (ms)
 %   4. correct (1) or error (0)
-scoh1 = Behavior1(:,2).*200-100;
+scoh1 = 2.*((Behavior1(:,2).*100)-50);
 Lcor1 = Behavior1(:,7);
+%Lcor1 = (Behavior1(:,2)>= -.20 & Behavior1(:,2)<.20) | (Behavior1(:,2)>.50&Lch1) | (Behavior1(:,2)<.50&~Lch1);
 data1 = cat(2, scoh1, Behavior1(:,6) - 1, Behavior1(:,11), double(Lcor1));
-scoh2 = Behavior2(:,2).*200-100;
+scoh2 = 2.*((Behavior2(:,2).*100)-50);
 Lcor2 = Behavior2(:,7);
+%Lcor2 = (Behavior2(:,2)>= -.20 & Behavior2(:,2)<.20) | (Behavior2(:,2)>.50&Lch2) | (Behavior2(:,2)<.50&~Lch2);
 data2 = cat(2, scoh2, Behavior2(:,6) - 1, Behavior2(:,11), double(Lcor2));
-scoh3 = Behavior3(:,2).*200-100;
+scoh3 = 2.*((Behavior3(:,2).*100)-50);
 Lcor3 = Behavior3(:,7);
+%Lcor3 = (Behavior3(:,2)>= -.20 & Behavior3(:,2)<.20) | (Behavior3(:,2)>.50&Lch3) | (Behavior3(:,2)<.50&~Lch3);
 data3 = cat(2, scoh3, Behavior3(:,6) - 1, Behavior3(:,11), double(Lcor3));
-scoh4 = Behavior4(:,2).*200-100;
+scoh4 = 2.*((Behavior4(:,2).*100)-50);
 Lcor4 = Behavior4(:,7);
+%Lcor4 = (Behavior4(:,2)>= -.20 & Behavior4(:,2)<.20) | (Behavior4(:,2)>.50&Lch4) | (Behavior4(:,2)<.50&~Lch4);
 data4 = cat(2, scoh4, Behavior4(:,6) - 1, Behavior4(:,11), double(Lcor4));
-scoh5 = Behavior5(:,2).*200-100;
-Lcor5 = Behavior5(:,7);
-data5 = cat(2, scoh5, Behavior5(:,6) - 1, Behavior5(:,11), double(Lcor5));
+% scoh5 = 2.*((Behavior5(:,2).*100)-50);
+% %Lcor5 = Behavior5(:,7);
+% Lcor5 = (Behavior5(:,2)>= -.20 & Behavior5(:,2)<.20) | (Behavior5(:,2)>.50&Lch5) | (Behavior5(:,2)<.50&~Lch5);
+% data5 = cat(2, scoh5, Behavior5(:,6) - 1, Behavior5(:,11), double(Lcor5));
 
 % make selection array, compute pmf and cmf
 % PMF - a function that gives the probability that a discrete random variable is exactly equal to some value
@@ -159,16 +177,16 @@ for cc = 1:nbins
     cmf4(cc,2) = nanmean(data4(Lcoh4(:,cc)&~Lch4,3));
 end
 
-Lcoh5 = false(ntrials, nbins);
-for cc = 1:nbins
-    Lcoh5(:,cc) = scoh5>=cbins(cc,1) & scoh5<cbins(cc,2);
-    cax5(cc) = mean(scoh5(Lcoh5(:,cc)));
-    
-    pmf5(cc) = sum(Behavior5(Lcoh5(:,cc)&Lch5,2))./sum(Lcoh5(:,cc)).*100;
-    
-    cmf5(cc,1) = nanmean(data5(Lcoh5(:,cc)& Lch5,3));
-    cmf5(cc,2) = nanmean(data5(Lcoh5(:,cc)&~Lch5,3));
-end
+% Lcoh5 = false(ntrials, nbins);
+% for cc = 1:nbins
+%     Lcoh5(:,cc) = scoh5>=cbins(cc,1) & scoh5<cbins(cc,2);
+%     cax5(cc) = mean(scoh5(Lcoh5(:,cc)));
+%     
+%     pmf5(cc) = sum(Behavior5(Lcoh5(:,cc)&Lch5,2))./sum(Lcoh5(:,cc)).*100;
+%     
+%     cmf5(cc,1) = nanmean(data5(Lcoh5(:,cc)& Lch5,3));
+%     cmf5(cc,2) = nanmean(data5(Lcoh5(:,cc)&~Lch5,3));
+% end
 
 X0  = [200 200 200 200 200];
 Xlb = [0.001 0.001 0.001 0.001 0.001];
@@ -182,15 +200,15 @@ Llapse3 = abs(scoh3)>=90;
 lapse3 = 1-sum(Llapse3&Lcor3)./sum(Llapse3);
 Llapse4 = abs(scoh4)>=90;
 lapse4 = 1-sum(Llapse4&Lcor4)./sum(Llapse4);
-Llapse5 = abs(scoh5)>=90;
-lapse5 = 1-sum(Llapse5&Lcor5)./sum(Llapse5);
+% Llapse5 = abs(scoh5)>=90;
+% lapse5 = 1-sum(Llapse5&Lcor5)./sum(Llapse5);
 
 % get err from initial fit
 err0_1 = fitJT_err(X0, data1, lapse1);
 err0_2 = fitJT_err(X0, data2, lapse2);
 err0_3 = fitJT_err(X0, data3, lapse3);
 err0_4 = fitJT_err(X0, data4, lapse4);
-err0_5 = fitJT_err(X0, data5, lapse5);
+% err0_5 = fitJT_err(X0, data5, lapse5);
 
 % fit it using pattern search
 [fits1,err1] = patternsearch(@(x)fitJT_err(x, data1, lapse1), ...
@@ -205,9 +223,9 @@ err0_5 = fitJT_err(X0, data5, lapse5);
 [fits4,err4] = patternsearch(@(x)fitJT_err(x, data4, lapse4), ...
     X0, [], [], [], [], Xlb, Xub, [], ...
     psoptimset('MaxIter', 50000, 'MaxFunEvals', 50000));
-[fits5,err5] = patternsearch(@(x)fitJT_err(x, data5, lapse5), ...
-    X0, [], [], [], [], Xlb, Xub, [], ...
-    psoptimset('MaxIter', 50000, 'MaxFunEvals', 50000));
+% [fits5,err5] = patternsearch(@(x)fitJT_err(x, data5, lapse5), ...
+%     X0, [], [], [], [], Xlb, Xub, [], ...
+%     psoptimset('MaxIter', 50000, 'MaxFunEvals', 50000));
 
 % possibly seed as init values
 if err1 < err0_1
@@ -238,12 +256,12 @@ else
     X0g4 = X0;
 end
 
-if err5 < err0_5
-    X0g5  = fits5;
-    err0_5 = err5;
-else
-    X0g5 = X0;
-end
+% if err5 < err0_5
+%     X0g5  = fits5;
+%     err0_5 = err5;
+% else
+%     X0g5 = X0;
+% end
 
 % now gradient descent
 [fitsg1,errg1] = fmincon(@(x)fitJT_err(x, data1, lapse1), ...
@@ -262,10 +280,10 @@ end
     X0g4, [], [], [], [], Xlb, Xub, [], ...
     optimset('Algorithm', 'active-set', ...
     'MaxIter', 40000, 'MaxFunEvals', 50000));%, 'Display', 'iter'));
-[fitsg5,errg5] = fmincon(@(x)fitJT_err(x, data5, lapse5), ...
-    X0g5, [], [], [], [], Xlb, Xub, [], ...
-    optimset('Algorithm', 'active-set', ...
-    'MaxIter', 40000, 'MaxFunEvals', 50000));
+% [fitsg5,errg5] = fmincon(@(x)fitJT_err(x, data5, lapse5), ...
+%     X0g5, [], [], [], [], Xlb, Xub, [], ...
+%     optimset('Algorithm', 'active-set', ...
+%     'MaxIter', 40000, 'MaxFunEvals', 50000));
 
 % save the best between the two methods
 if errg1 < err0_1
@@ -280,16 +298,16 @@ end
 if errg4 < err0_4
     fits4 = fitsg4;
 end
-if errg5 < err0_5
-    fits5 = fitsg5;
-end
+% if errg5 < err0_5
+%     fits5 = fitsg5;
+% end
 
 %%% PLOTZ
 [ps1,rts1] = fitJT_val_simple5L(cfax, fits1, lapse1);
 [ps2,rts2] = fitJT_val_simple5L(cfax, fits2, lapse2);
 [ps3,rts3] = fitJT_val_simple5L(cfax, fits3, lapse3);
 [ps4,rts4] = fitJT_val_simple5L(cfax, fits4, lapse4);
-[ps5,rts5] = fitJT_val_simple5L(cfax, fits5, lapse5);
+%[ps5,rts5] = fitJT_val_simple5L(cfax, fits5, lapse5);
 
 subplot(3,1,1); cla reset; hold on;
 %%%block 1
@@ -313,13 +331,13 @@ p4 = plot(cfax, ps4.*100, 'g-');
 plot([-100 0], [lapse4*100 lapse4*100], 'g--');
 plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
 %%%block5
-plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
-p5 = plot(cfax, ps5.*100, 'm-');
-plot([-100 0], [lapse5*100 lapse5*100], 'm--');
-plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
-xlabel('Coherence (%): +100 means all high tones')
-ylabel('high-tone choice (%)')
-legend([p1, p2, p3, p4, p5], [block1, block2, block3, block4, block5])
+% plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+% p5 = plot(cfax, ps5.*100, 'm-');
+% plot([-100 0], [lapse5*100 lapse5*100], 'm--');
+% plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
+% xlabel('Coherence (%): +100 means all high tones')
+% ylabel('high-tone choice (%)')
+% legend([p1, p2, p3, p4, p5], [block1, block2, block3, block4, block5])
 
 %Horizontal shifts of these lines imply changes in the mean rate-of-rise 
 %swivels about a fixed point at infinite RT imply changes in the bound height
@@ -349,14 +367,15 @@ g4 = plot(cfax, rts4, 'g-');
 plot([0 100], fits4([4 4]), 'g--');
 plot([-100 0], fits4([5 5]), 'g--');
 %%%block5
-plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
-plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
-g5 = plot(cfax, rts5, 'm-');
-plot([0 100], fits5([4 4]), 'm--');
-plot([-100 0], fits5([5 5]), 'm--');
+% plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
+% plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+% g5 = plot(cfax, rts5, 'm-');
+% plot([0 100], fits5([4 4]), 'm--');
+% plot([-100 0], fits5([5 5]), 'm--');
+
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('Response time (ms)')
-legend([g1, g2, g3, g4, g5], [block1, block2, block3, block4, block5])
+%legend([g1, g2, g3, g4, g5], [block1, block2, block3, block4, block5])
 
 subplot(3,1,3); cla reset; hold on;
 %%%block 1
@@ -372,9 +391,9 @@ v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits3(4), 'b-');
 plot(cfax(cfax<0), rts4(cfax<0)-fits4(5), 'g-');hold on;
 v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits4(4), 'g-');
 %%%block 5
-plot(cfax(cfax<0), rts5(cfax<0)-fits5(5), 'm-');hold on;
-v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits5(4), 'm-');
+% plot(cfax(cfax<0), rts5(cfax<0)-fits5(5), 'm-');hold on;
+% v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits5(4), 'm-');
 xlabel('Coherence (%): +100 means all high tones')
 ylabel('Decision time (ms): RT-nonDT')
-legend([v1 v2 v3 v4 v5],[block1 block2 block3 block4 block5])
+%legend([v1 v2 v3 v4],[block1 block2 block3 block4 block5])
 end

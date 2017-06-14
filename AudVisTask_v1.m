@@ -1,5 +1,6 @@
 function [task, list] = AudVisTask_v1(dispInd)
 %% 05-22-2017 created by Brianna - Auditory Visual Task
+% all 5 blocks with no break
 %% Setting up the screen
 
 isClient = false;

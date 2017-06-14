@@ -2,17 +2,17 @@ function MyDDMSimultaneous(block_size)
 %% Set up
 
 % Data File being used:
-% 4th column: percentage of high tone (mapped this percentage to signed coherence like this: (proportion-50).*2)
-% 8th column: monkey's choice (2: high-tone choice, 1: low-tone choice)
-% 13th column: response time (sec)
-% 9th column: success of choice (1: correct, 0: incorrect)
+% 1st column: percentage of high tone (mapped this percentage to signed coherence like this: (proportion-50).*2)
+% 2nd column: monkey's choice (1: high-tone choice, 0: low-tone choice)
+% 3rd column: response time (sec)
+% 4th column: success of choice (1: correct, 0: incorrect)
 
 close all
 
 %cd into file that holds data 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-PopBehavior = csvread('DDM_AudVisTask_v1_Diana_Sad_170606_1547.csv', 1, 0); %block size 25
+PopBehavior = csvread('DDM_AudVisTask_v1_Diana_Sad_170606_1547.csv', 1, 0); %block size 80
 %csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
 %csvread('SampleData.csv'); %block size 15
 Headings = load('AudVisTask_v1_Diana_Sad_170606_1547_table.mat');
@@ -24,47 +24,22 @@ block2 = h{block_size + 1,1};
 block3 = h{2*block_size + 1,1};
 block4 = h{3*block_size + 1,1};
 block5 = h{4*block_size + 1, 1};
-
+  
 %coherence bins
 cbins = [ ...
-    -100  -99
-    -99   -50
-    -50   -34
-    -34   -20
-    -20   -10
-    -10    10
-     10    20
-     20    34
-     34    50
-     50    99
-     99   100];
-  
-%  cbins = [ ...
-%     -100  -99
-%      -99  -80
-%      -80  -65
-%      -65  -50
-%      -50  -34
-%      -34  -20
-%      -20  -10
-%      -10   10
-%       10   20
-%       20   34
-%       34   50
-%       50   65
-%       65   80
-%       80   99
-%       99  100];
-  
-% %coherence bins
-% cbins = [ ...
-%    -100   -99
-%     -99   -60
-%     -60   -20
-%     -20    20
-%      20    60
-%      60   100
-%     100   101];
+        -100  -99
+        -99   -60
+        -60   -40
+        -40   -28
+        -28   -12
+        -12    -8
+         -8     8
+          8    12
+         12    28
+         28    40
+         40    60
+         60    99
+         99   100];
 
 %calculate number of coherence bins 
 nbins = size(cbins,1);
@@ -113,7 +88,7 @@ Lch5     = Behavior5(:,2)==1;
 %   4. correct (1) or error (0)
 
 scoh1 = Behavior1(:,1).*200-100;
-Lcor1 = Behavior1(:,4); %(Behavior(:,1)>= -20 & Behavior(:,1)<20) | (Behavior(:,1)>50&Lch) | (Behavior(:,1)<50&~Lch);
+Lcor1 = Behavior1(:,4);
 data1 = cat(2, scoh1, Behavior1(:,2), Behavior1(:,3), double(Lcor1));
 scoh2 = Behavior2(:,1).*200-100;
 Lcor2 = Behavior2(:,4); 
@@ -428,7 +403,7 @@ end
 %%%BIC is "harsher" on free parameters than AIC
 errors = [err_indep, err_mu, err_AB, err_A, err_B];
 [aic, bic] = aicbic(errors, [5, 4, 3, 4, 4], block_size .* ones(5,1));
-[~, index] = min(bic);
+[~, index] = min(aic);
 
 if index == 1
     [ps1,rts1] = fitJT_val_simple5L(cfax, fits1, lapse1);
@@ -518,27 +493,27 @@ figure()
 if index == 1
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
-    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 12);
     p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
-    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 12);
     p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
-    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 12); hold on;
     p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75);
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
-    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 12);
     p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
-    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 12);
     p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
@@ -552,20 +527,20 @@ if index == 1
     %swivels about a fixed point at infinite RT imply changes in the bound height
     subplot(3,1,2); cla reset; hold on;
     %%%block 1
-    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
-    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
     g1 = plot(cfax, rts1, 'k-', 'LineWidth', 0.75);
     plot([0 100], fits1([4 4]), 'k--');
     plot([-100 0], fits1([5 5]), 'k--');
     %%%block 2
-    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
-    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
     g2 = plot(cfax, rts2, 'r-', 'LineWidth', 0.75);
     plot([0 100], fits2([4 4]), 'r--');
     plot([-100 0], fits2([5 5]), 'r--');
     %%%block 3
-    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
-    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
     g3 = plot(cfax, rts3, 'b-', 'LineWidth', 0.75);
     plot([0 100], fits3([4 4]), 'b--');
     plot([-100 0], fits3([5 5]), 'b--');
@@ -576,8 +551,8 @@ if index == 1
     plot([0 100], fits4([4 4]), 'g--');
     plot([-100 0], fits4([5 5]), 'g--');
     %%%block5
-    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
-    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
     g5 = plot(cfax, rts5, 'm-', 'LineWidth', 0.75);
     plot([0 100], fits5([4 4]), 'm--');
     plot([-100 0], fits5([5 5]), 'm--');
@@ -611,27 +586,27 @@ if index == 1
 elseif index == 2
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
-    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 12);
     p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
-    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 12);
     p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
-    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 12); hold on;
     p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
-    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 12);
     p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
-    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 12);
     p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
@@ -645,32 +620,32 @@ elseif index == 2
     %swivels about a fixed point at infinite RT imply changes in the bound height
     subplot(3,1,2); cla reset; hold on;
     %%%block 1
-    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
-    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
     g1 = plot(cfax, rts1, 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([4 4]), 'k--');
     plot([-100 0], fits_mu([5 5]), 'k--');
     %%%block 2
-    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
-    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
     g2 = plot(cfax, rts2, 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([8 8]), 'r--');
     plot([-100 0], fits_mu([9 9]), 'r--');
     %%%block 3
-    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
-    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
     g3 = plot(cfax, rts3, 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([12 12]), 'b--');
     plot([-100 0], fits_mu([13 13]), 'b--');
     %%%block 4
-    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
-    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
+    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 12);
+    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 12);
     g4 = plot(cfax, rts4, 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([16 16]), 'g--');
     plot([-100 0], fits_mu([17 17]), 'g--');
     %%%block5
-    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
-    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
     g5 = plot(cfax, rts5, 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_mu([20 20]), 'm--');
     plot([-100 0], fits_mu([21 21]), 'm--');
@@ -704,27 +679,27 @@ elseif index == 2
 elseif index == 3
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
-    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 12);
     p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
-    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 12);
     p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
-    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 12); hold on;
     p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
-    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 12);
     p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
-    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 12);
     p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
@@ -738,32 +713,32 @@ elseif index == 3
     %swivels about a fixed point at infinite RT imply changes in the bound height
     subplot(3,1,2); cla reset; hold on;
     %%%block 1
-    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
-    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
     g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([4 4]), 'k--');
     plot([-100 0], fits_AB([5 5]), 'k--');
     %%%block 2
-    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
-    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
     g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([7 7]), 'r--');
     plot([-100 0], fits_AB([8 8]), 'r--');
     %%%block 3
-    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
-    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
     g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([10 10]), 'b--');
     plot([-100 0], fits_AB([11 11]), 'b--');
     %%%block 4
-    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
-    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
+    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 12);
+    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 12);
     g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([13 13]), 'g--');
     plot([-100 0], fits_AB([14 14]), 'g--');
     %%%block5
-    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
-    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
     g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_AB([16 16]), 'm--');
     plot([-100 0], fits_AB([17 17]), 'm--');
@@ -797,27 +772,27 @@ elseif index == 3
 elseif index == 4
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
-    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 12);
     p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
-    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 12);
     p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
-    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 12); hold on;
     p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
-    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 12);
     p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
-    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 12);
     p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
@@ -831,32 +806,32 @@ elseif index == 4
     %swivels about a fixed point at infinite RT imply changes in the bound height
     subplot(3,1,2); cla reset; hold on;
     %%%block 1
-    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
-    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
     g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_A([4 4]), 'k--');
     plot([-100 0], fits_A([5 5]), 'k--');
     %%%block 2
-    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
-    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
     g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_A([8 8]), 'r--');
     plot([-100 0], fits_A([9 9]), 'r--');
     %%%block 3
-    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
-    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
     g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_A([12 12]), 'b--');
     plot([-100 0], fits_A([13 13]), 'b--');
     %%%block 4
-    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
-    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
+    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 12);
+    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 12);
     g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_A([16 16]), 'g--');
     plot([-100 0], fits_A([17 17]), 'g--');
     %%%block5
-    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
-    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
     g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_A([20 20]), 'm--');
     plot([-100 0], fits_A([21 21]), 'm--');
@@ -890,27 +865,27 @@ elseif index == 4
 elseif index == 5
     subplot(3,1,1); cla reset; hold on;
     %%%block 1
-    plot(cax1, pmf1, 'k.', 'MarkerSize', 8);
+    plot(cax1, pmf1, 'k.', 'MarkerSize', 12);
     p1 = plot(cfax, ps1.*100, 'k-', 'LineWidth', 0.75);
     plot([-100 0], [lapse1*100 lapse1*100], 'k--');
     plot([0 100], [100-lapse1*100 100-lapse1*100], 'k--');
     %%%block 2
-    plot(cax2, pmf2, 'r.', 'MarkerSize', 8);
+    plot(cax2, pmf2, 'r.', 'MarkerSize', 12);
     p2 = plot(cfax, ps2.*100, 'r-', 'LineWidth', 0.75);
     plot([-100 0], [lapse2*100 lapse2*100], 'r--');
     plot([0 100], [100-lapse2*100 100-lapse2*100], 'r--');
     %%%block 3
-    plot(cax3, pmf3, 'b.', 'MarkerSize', 8); hold on;
+    plot(cax3, pmf3, 'b.', 'MarkerSize', 12); hold on;
     p3 = plot(cfax, ps3.*100, 'b-', 'LineWidth', 0.75); hold on;
     plot([-100 0], [lapse3*100 lapse3*100], 'b--'); hold on;
     plot([0 100], [100-lapse3*100 100-lapse3*100], 'b--');
     %%%block 4
-    plot(cax4, pmf4, 'g.', 'MarkerSize', 8);
+    plot(cax4, pmf4, 'g.', 'MarkerSize', 12);
     p4 = plot(cfax, ps4.*100, 'g-', 'LineWidth', 0.75);
     plot([-100 0], [lapse4*100 lapse4*100], 'g--');
     plot([0 100], [100-lapse4*100 100-lapse4*100], 'g--');
     %%%block5
-    plot(cax5, pmf5, 'm.', 'MarkerSize', 8);
+    plot(cax5, pmf5, 'm.', 'MarkerSize', 12);
     p5 = plot(cfax, ps5.*100, 'm-', 'LineWidth', 0.75);
     plot([-100 0], [lapse5*100 lapse5*100], 'm--');
     plot([0 100],[100-lapse5*100 100-lapse5*100], 'm--');
@@ -924,32 +899,32 @@ elseif index == 5
     %swivels about a fixed point at infinite RT imply changes in the bound height
     subplot(3,1,2); cla reset; hold on;
     %%%block 1
-    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 8);
-    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 8);
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
     g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
     plot([0 100], fits_B([4 4]), 'k--');
     plot([-100 0], fits_B([5 5]), 'k--');
     %%%block 2
-    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 8);
-    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 8);
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
     g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
     plot([0 100], fits_B([8 8]), 'r--');
     plot([-100 0], fits_B([9 9]), 'r--');
     %%%block 3
-    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 8);
-    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 8);
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
     g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
     plot([0 100], fits_B([12 12]), 'b--');
     plot([-100 0], fits_B([13 13]), 'b--');
     %%%block 4
-    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 8);
-    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 8);
+    plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 12);
+    plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 12);
     g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
     plot([0 100], fits_B([16 16]), 'g--');
     plot([-100 0], fits_B([17 17]), 'g--');
     %%%block5
-    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 8);
-    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 8);
+    plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+    plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
     g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
     plot([0 100], fits_B([20 20]), 'm--');
     plot([-100 0], fits_B([21 21]), 'm--');

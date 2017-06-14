@@ -32,11 +32,11 @@ list{'meta'}{'saveFilename'} = save_filename;
 %% Settings for generating the sequence of conditions
 
 % number visual modes 
-block_size = 5;
+block_size = 3; %5;
 % number of trials per visual mode
-block_rep = 1; %1 %15 %50 %75
+block_rep = 125; %1 %15 %50 %75
 % possible visual values to select from
-vis_vals = {'None', 'Low', 'High', 'All', 'Random'};
+vis_vals = {'None', 'Low', 'High'}; %{'None', 'Low', 'High', 'All', 'Random'};
 
 %% Visual conditions for each trial
 
@@ -79,7 +79,7 @@ list{'Counter'}{'trial'} = 0;
 
 %possible coherences
 %most data should be collected between about 25 and 75
-coherences = [0, .1, .25, .33, .40, .50, .60, .67, .75, .9, 1];
+coherences = [0, .1, .25, .33, .40, .45, .50, .55, .60, .67, .75, .9, 1];
 
 for i = 1:nTrials
     %add coherence as a condition
@@ -89,23 +89,23 @@ for i = 1:nTrials
     tmp_coh.addAssignment('cohLevel', likesCohLevel, '.', 'name');
 
     %randomly generate a coherence
-    index = randsample(11,1);
+    index = randsample(13,1);
     c = coherences(index);
-    cohLevels(i) = c;
+    cohLevels(i, 1) = c;
 end 
 
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
-hd.loFreq = 4500; %hz      312.5 |  625 | 1250 | 2500 |  5000
-hd.hiFreq = 21000; %hz     625   | 1250 | 2500 | 5000 | 10000
+hd.loFreq = 5000; %hz      312.5 |  625 | 1250 | 2500 |  5000
+hd.hiFreq = 20000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
 hd.trialDur = 4000; %ms
 hd.fs = 44100; %samples/sec
 
 % INPUT PARAMETERS
-responsewindow = hd.trialDur/2; %time allowed to respond = half trial duration, ms
+responsewindow = 4; %time allowed to respond = trial duration, s
 list{'Input'}{'responseWindow'} = responsewindow;
 
 % CREATE AUDIOPLAYER
@@ -468,7 +468,7 @@ function startTrial(list, block_rep)
     
     b = int16(ceil((counter/block_rep)));
     block = dotsDrawableText();
-    block.string = sprintf('Block %d of 5', b);
+    block.string = sprintf('Block %d of 3', b);
     block.typefaceName = 'Calibri';
     block.isVisible = false;
     block.x = 0;
