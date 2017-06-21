@@ -12,10 +12,10 @@ close all
 %cd into file that holds data 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-PopBehavior = csvread('DDM_AudVisTask_v1_Diana_Sad_170606_1547.csv', 1, 0); %block size 80
+PopBehavior = csvread('DDM_AudVisTask_v2_Beta_170619_1536.csv', 1, 0); %block size 80
 %csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
 %csvread('SampleData.csv'); %block size 15
-Headings = load('AudVisTask_v1_Diana_Sad_170606_1547_table.mat');
+Headings = load('AudVisTask_v2_Beta_170619_1536_table.mat');
 h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix

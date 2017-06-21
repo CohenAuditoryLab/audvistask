@@ -1,5 +1,6 @@
-function [task, list] = AudVisTask_v2(dispInd)
+function [task, list] = AudVisTask_v3(dispInd)
 %% 05-22-2017 created by Brianna - Auditory Visual Task
+%%Using VisualTones2
 %% Setting up the screen
 
 isClient = false;
@@ -34,7 +35,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes 
 block_size = 2; %4;
 % number of trials per visual mode
-block_rep = 150; %1 %15 %50 %75
+block_rep = 15; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'Low', 'High'}; %{'None', 'Low', 'High'}; %{'None', 'Low', 'High', 'All', 'Random'};
 
@@ -53,7 +54,9 @@ visualModes = cell(nTrials, 1);
 %each mode will only be selected once per trial
 taskConditions.setPickingMethod('shuffledEach',1);
 
-visualModes{1:block_rep} = 'None';
+for j = 1:block_rep
+    visualModes{j} = 'None';
+end
 
 keepGoing = true;
 counter = block_rep;
@@ -530,7 +533,6 @@ function string = waitForChoiceKey(list)
 
     % whether it's a high-freq trial
     isH = list{'Stimulus'}{'isH'}; 
-    bursts = list{'Stimulus'}{'bursts'};
     isH_played = list{'Stimulus'}{'isH_played'};
     coh_played = list{'Stimulus'}{'coh_played'};
     numTones_played = list{'Stimulus'}{'numTones_played'};
@@ -592,23 +594,21 @@ function string = waitForChoiceKey(list)
         cur_choice = press{1};
 
         %get the number of tones played
-        b = bursts(counter, :);
-        cumT = 0;
-        count = 1;
-        n = 0;
-        while cumT < rt && count <= sum((b ~= 0))
-            n = n + 1;
-            cumT = cumT + bursts(counter,count) + bursts(counter, count+1);
-            count = count + 2;
-        end
-        numTones_played(counter) = n;
+        freq = list{'Stimulus'}{'freq'};
+        %convert reaction time to number of samples 
+        samples = floor(rt / 1000 * hd.fs);
+        %get frequencies corresponding to played samples
+        curFreq = freq{counter};
+        playedFreq = curFreq(1:samples, :);
+        numSamples = sum(playedFreq ~= 0);
+        numTones = floor(numSamples / 2205);
+        numHi = floor(sum(playedFreq == hd.hiFreq)/2205);
+        numLo = floor(sum(playedFreq == hd.loFreq)/2205);
 
         %determine more popular pitch of played tones
-        playedTones = freq{counter}(1:n);
-        isLo = sum(playedTones == hd.loFreq);
-        isHi = sum(playedTones == hd.hiFreq);
-        coh_played(counter) = isHi/n;
-        isH_played(counter) = isHi > isLo;
+        numTones_played(counter) = numTones;
+        coh_played(counter) = numHi/numTones;
+        isH_played(counter) = numHi > numLo;
     else 
         rt = NaN;
         cur_choice = NaN;
@@ -699,7 +699,7 @@ function playstim(list)
     hd = list{'Stimulus'}{'header'};
     
     %produce the stimulus
-    [waveform, full_stimulus, f, h, bursts] = VisualTones(hd.loFreq, hd.hiFreq,...
+    [waveform, full_stimulus, f, h] = VisualTones2(hd.loFreq, hd.hiFreq,...
         coh_list(counter), visualModes{counter});
 
     %player information 
@@ -729,8 +729,4 @@ function playstim(list)
     isH = list{'Stimulus'}{'isH'};
     isH(counter) = h;
     list{'Stimulus'}{'isH'} = isH;
-    
-    b = list{'Stimulus'}{'bursts'};
-    b(counter, 1:length(bursts)) = bursts;
-    list{'Stimulus'}{'bursts'} = b;
 end 

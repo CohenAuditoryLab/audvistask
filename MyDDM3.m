@@ -12,16 +12,16 @@ close all
 %cd into file that holds data 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-PopBehavior = xlsread('Diana_All.xls'); %block size 80
-%csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
+PopBehavior = csvread('DDM_AudVisTask_v2_Beta_170619_1536.csv', 1, 0);
+%xlsread('Diana_All.xls'); %block size 80
 %csvread('SampleData.csv'); %block size 15
-% Headings = load('AudVisTask_v2_Diana_170613_1511_table.mat');
-% h = Headings.data_table_stim(:, 2);
+Headings = load('AudVisTask_v2_Beta_170619_1536_table.mat');
+h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix
-block1 = 'None';
-block2 = 'Low';
-block3 = 'High';
+block1 = h{1, 1};
+block2 = h{block_size + 1,1};
+block3 = h{2*block_size + 1,1};
 
 %coherence bins
 cbins = [ ...
@@ -454,7 +454,7 @@ if index == 1
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('high-tone choice (%)')
-    legend([p1, p2, p3], {block1, block2, block3})
+    legend([p1, p2, p3], [block1, block2, block3])
     title(t);
     
     %Horizontal shifts of these lines imply changes in the mean rate-of-rise
@@ -481,7 +481,7 @@ if index == 1
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Response time (ms)')
-    legend([g1, g2, g3], {block1, block2, block3})
+    legend([g1, g2, g3], [block1, block2, block3])
     
     subplot(3,1,3); cla reset; hold on;
     %%%block 1
@@ -496,7 +496,7 @@ if index == 1
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
-    legend([v1 v2 v3],{block1 block2 block3})
+    legend([v1 v2 v3],[block1 block2 block3])
 
     figure()
     subplot(3,2,1); hold on;

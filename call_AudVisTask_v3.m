@@ -1,4 +1,4 @@
-%% prepare to run AudVisTask_v1
+%% prepare to run AudVisTask_v3
 
 %clean all existing data
 clear;
@@ -6,7 +6,7 @@ close all;
 topsDataLog.flushAllData();
 
 %dispInd = 0 for small screen, 1 for full screen, >1 for external monitors
-[task, list] = AudVisTask_v2(0); 
+[task, list] = AudVisTask_v3(0); 
 task.run();
 
 %Post-Processing 

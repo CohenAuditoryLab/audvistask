@@ -33,7 +33,7 @@ while timeCounter < 4000
     %time vector 
     t = linspace(0, duration, samples);
     %sine vector for one sound burst
-    x = sin((2 * pi * (freq / samplingFreq)) .* t);
+    x = sin((2 * pi * (freq/1000)) .* t);
 
     %gate the sine wave 
     %since 5ms up, 50ms total -> need 1/10 of samples 
@@ -131,7 +131,7 @@ end
 visualBurst = visualBurst(1:length(totalBurst));
 
 %concatenate and play
-stimulus = cat(1, totalBurst, visualBurst);
+stimulus = cat(1, totalBurst,  visualBurst);
 %sound(stimulus, 44100);
 
 end
