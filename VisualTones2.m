@@ -119,12 +119,21 @@ for jj = 1:length(i)
         visual = visual(1:length(vis(i(jj) : ind_end)));
     end
     auditory = auditory + aud(i(jj) : ind_end);
-    %visual = visual + vis(i(jj) : ind_end);
-    aud(i(jj) : ind_end) = auditory;
+    %visual = abs(visual - vis(i(jj) : ind_end));
+    aud(i(jj) : ind_end) = 0.015 .* auditory;
     vis(i(jj) : ind_end) = visual;
+    
+   %create variation in on/off for all at length of tone bursts
+   %otherwise light only turns on 3 times
+    if strcmp(mode, 'All')
+        ind = find(vis == 1);
+        for k = 1:length(visual):length(ind)
+            vis(k) = 0;
+        end 
+    end
+    
     frequencies(i(jj) : ind_end, :) = freq;
 end
-
 %% Outputs
 
 %concatenate
@@ -137,11 +146,11 @@ isHigh = numHi > numLo;
 
 %% Graphing and playing for testing purposes
 time = linspace(0, 4000, 2205*40);
-plot(time, aud(1:2205*40));
+plot(time, 100.*aud(1:2205*40));
 hold on;
-plot(time, vis(1:2205*40));
-%ylim([-3.5 3.5])Av
-% 
-% sound(stimulus, 44100);
+plot(time, vis(1:2205*40), 'LineWidth', 3);
+% ylim([-3.5 3.5])
+
+%sound(stimulus, 44100);
 end
 
