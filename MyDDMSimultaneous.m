@@ -12,10 +12,10 @@ close all
 %cd into file that holds data 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-PopBehavior = csvread('DDM_AudVisTask_v2_Beta_170619_1536.csv', 1, 0); %block size 80
+PopBehavior = csvread('DDM_AudVisTask_v3_Jaejin_170629_1544.csv', 1, 0); %block size 80
 %csvread('DDM_AudVisTask_v1_Brianna_170530_1345.csv', 1, 0); %block size 25
 %csvread('SampleData.csv'); %block size 15
-Headings = load('AudVisTask_v2_Beta_170619_1536_table.mat');
+Headings = load('AudVisTask_v3_Jaejin_170629_1544_table.mat');
 h = Headings.data_table_stim(:, 2);
 
 %extract block visual modes from matrix
@@ -27,19 +27,19 @@ block5 = h{4*block_size + 1, 1};
   
 %coherence bins
 cbins = [ ...
-        -100  -99
-        -99   -60
-        -60   -40
-        -40   -28
-        -28   -12
-        -12    -8
-         -8     8
-          8    12
-         12    28
-         28    40
-         40    60
-         60    99
-         99   100];
+    -101  -99
+    -99   -60
+    -60   -40
+    -40   -28
+    -28   -12
+    -12    -8
+    -8      8
+     8     12
+    12     28
+    28     40
+    40     60
+    60     99
+    99    101];
 
 %calculate number of coherence bins 
 nbins = size(cbins,1);

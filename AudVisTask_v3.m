@@ -32,12 +32,12 @@ list{'meta'}{'saveFilename'} = save_filename;
 
 %% Settings for generating the sequence of conditions
 
-% number visual modes 
-block_size = 2; %4;
+% number visual modes (not including None)
+block_size = 3; %4;
 % number of trials per visual mode
-block_rep = 15; %1 %15 %50 %75
+block_rep = 100; %1 %15 %50 %75
 % possible visual values to select from
-vis_vals = {'Low', 'High'}; %{'None', 'Low', 'High'}; %{'None', 'Low', 'High', 'All', 'Random'};
+vis_vals = {'Low', 'High', 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 
 %% Visual conditions for each trial
 
@@ -102,10 +102,10 @@ end
 list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
-hd.loFreq = 1250; %hz      312.5 |  625 | 1250 | 2500 |  5000
+hd.loFreq = 1000; %hz      312.5 |  625 | 1250 | 2500 |  5000
 hd.hiFreq = 2500; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
-hd.toneSOA = 10; %ms, actually poisson random number centered around 10 
+hd.toneSOA = 10; %ms, actually poisson point process number centered around 10 
 hd.trialDur = 4000; %ms
 hd.fs = 44100; %samples/sec
 
@@ -247,13 +247,13 @@ highlabel.y = 3;
 
 %Block Label (top)
 blocklabel = dotsDrawableText();
-blocklabel.string = sprintf('Block Number 1 of 3');
+blocklabel.string = sprintf('Block Number 1 of 4');
 blocklabel.typefaceName = 'Calibri';
 blocklabel.isVisible = false;
 blocklabel.y = 5.5;
 
 readyprompt1 = dotsDrawableText();
-readyprompt1.string = 'This task will consist of 3 blocks.';
+readyprompt1.string = 'This task will consist of 4 blocks.';
 readyprompt1.fontSize = 32;
 readyprompt1.typefaceName = 'Calibri';
 readyprompt1.y = 4;
@@ -473,7 +473,7 @@ function startTrial(list, block_rep)
     
     b = int16(ceil((counter/block_rep)));
     block = dotsDrawableText();
-    block.string = sprintf('Block %d of 3', b);
+    block.string = sprintf('Block %d of 4', b);
     block.typefaceName = 'Calibri';
     block.isVisible = false;
     block.x = 0;
