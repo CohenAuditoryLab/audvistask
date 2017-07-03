@@ -1,6 +1,6 @@
 function [task, list] = AudVisTask_v3(dispInd)
 %% 05-22-2017 created by Brianna - Auditory Visual Task
-%%Using VisualTones2
+%%Using VisualTones2, Create Stimulus, AddSpeakerCue
 %% Setting up the screen
 
 isClient = false;
@@ -113,11 +113,15 @@ hd.fs = 44100; %samples/sec
 responsewindow = 4; %time allowed to respond = trial duration, s
 list{'Input'}{'responseWindow'} = responsewindow;
 
-% CREATE AUDIOPLAYER
-player = dotsPlayableWave_2Channel();
+% CREATE AUDIOPLAYERS
+player = dotsPlayableWave_TDT();
 player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
 player.intensity = 1;
+player2 = dotsPlayableWave_TDT2();
+player2.sampleFrequency = hd.fs;
+player2.duration = hd.trialDur; %ms
+player2.intensity = 1;
 %% Time Variables
 iti = 1; %seconds
 list{'timing'}{'intertrial'} = iti; %intertrial interval
@@ -203,6 +207,8 @@ list{'Input'}{'controller'} = ui;
 list{'Stimulus'}{'header'} = hd;
 list{'Stimulus'}{'player'} = player;
 list{'Stimulus'}{'waveforms'} = cell(nTrials,1);
+list{'Stimulus'}{'masker'} = cell(nTrials,1);
+list{'Stimulus'}{'speaker'} = cell(nTrials,1);
 list{'Stimulus'}{'freq'} = cell(nTrials,1);
 list{'Stimulus'}{'isH'} = zeros(nTrials,1);
 list{'Stimulus'}{'bursts'} = zeros(nTrials,136);
@@ -571,8 +577,8 @@ function string = waitForChoiceKey(list)
 
             %get the timestamp of the stimulus stop time 
             stim_stop = list{'Timestamps'}{'stim_stop'};
-            if length(player.stopTime) == 1
-                stim_stop(counter) = player.stopTime;
+            if length(GetSecs) == 1
+                stim_stop(counter) = GetSecs;
             end
             list{'Timestamps'}{'stim_stop'} = stim_stop;
         end 
@@ -590,6 +596,9 @@ function string = waitForChoiceKey(list)
 
         %calculate reaction time 
         rt = (timestamp - stim_start(counter)) * 1000; %ms
+        delay = 6*50 + 500; %ms
+        rt = rt - delay;
+        delaysamp = floor(delay / 1000 * hd.fs);
         %record current choice 
         cur_choice = press{1};
 
@@ -599,7 +608,7 @@ function string = waitForChoiceKey(list)
         samples = floor(rt / 1000 * hd.fs);
         %get frequencies corresponding to played samples
         curFreq = freq{counter};
-        playedFreq = curFreq(1:samples, :);
+        playedFreq = curFreq(delaysamp:samples+delaysamp, :);
         numSamples = sum(playedFreq ~= 0);
         numTones = floor(numSamples / 2205);
         numHi = floor(sum(playedFreq == hd.hiFreq)/2205);
@@ -699,27 +708,51 @@ function playstim(list)
     hd = list{'Stimulus'}{'header'};
     
     %produce the stimulus
-    [waveform, full_stimulus, f, h] = VisualTones2(hd.loFreq, hd.hiFreq,...
-        coh_list(counter), visualModes{counter});
-
-    %player information 
+%     [waveform, full_stimulus, f, h] = VisualTones2(hd.loFreq, hd.hiFreq,...
+%         coh_list(counter), visualModes{counter});
+    [waveform, full_target, f, h, masker_waveform, full_masker] = ...
+        CreateStimulus(hd.loFreq, hd.hiFreq, coh_list(counter),...
+        visualModes{counter});
+    %add speaker cue to stimuli
+    [new_target, new_masker] = AddSpeakerCue(full_target, full_masker);
+    
+    %target information 
     player = list{'Stimulus'}{'player'};    
-    player.wave = full_stimulus; %both auditory and visual stimuli 
-    %player.wave = [waveform; waveform]; %auditory only
-    player.prepareToPlay;
+    
+    %decide which speaker gets target and which gets masker 
+    r = 2 * rand;
+    if r <= 1
+        chosen = 'Speaker 1';
+        player.wave = new_target;
+        player2.wave = new_masker;
+    else 
+        chosen = 'Speaker 2';
+        player.wave = new_masker;
+        player2.wave = new_target;
+    end 
+    %store target speaker 
+    speaker = list{'Stimulus'}{'speaker'};
+    speaker{counter} = chosen;
+    list{'Stimulus'}{'speaker'} = speaker;
+    
+    %play stimuli in correct speakers  
+    player.preparetoPlay;
+    player2.preparetoPlay;
     player.play;
+    player2.play;
 
     %log stimulus timestamps 
     stim_start = list{'Timestamps'}{'stim_start'};
-    if ~isempty(player.playTime)
-        stim_start(counter) = player.playTime;
-    end 
+    stim_start(counter) = GetSecs;
     list{'Timestamps'}{'stim_start'} = stim_start;
     
-    %store waveform
+    %store waveforms
     waveforms = list{'Stimulus'}{'waveforms'};
     waveforms{counter} = waveform;
     list{'Stimulus'}{'waveforms'} = waveforms;
+    maskers = list{'Stimulus'}{'masker'};
+    maskers{counter} = masker_waveform;
+    list{'Stimulus'}{'masker'} = maskers;
 
     %store frequency data 
     freq = list{'Stimulus'}{'freq'};
