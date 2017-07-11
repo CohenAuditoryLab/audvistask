@@ -6,7 +6,7 @@ function [new_target, new_masker] = AddSpeakerCue(target_stimulus, masker_stimul
 
 %number of samples for one 50ms visual burst
 duration = 50; %ms
-samplingFreq = 44100; %Hz
+samplingFreq = 24414.06; %Hz
 samples = duration / 1000 * samplingFreq;
 vburst = ones(1, samples);
 aburst = zeros(1, samples);

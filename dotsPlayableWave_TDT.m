@@ -35,27 +35,31 @@ classdef dotsPlayableWave_TDT < dotsPlayable
             end
             
             % load rcx file
-            RP.load(RCXFile);
+            RP.LoadCOF(RCXFile);
+            RP.Run();
         end
         
         % Compute a sinusoidal wavform to play.
         function prepareToPlay(self)
             self.waveform = self.wave*self.intensity;
-            RP.WriteTagVEX('datain', 0, 'F32', self.waveform(1,:));
+            RP.WriteTagVEX('datain1', 0, 'F32', self.waveform(1,:));
+            RP.WriteTagVEX('lightin1', 0, 'F32', self.waveform(2,:));
+            drawnow;
         end
         
         % Play the tone.
         function play(self)
-            RP.Run();
             if ~isempty(self.wave)
                 %trigger for on
-                RP.SoftTrg(1);
+                RP.SoftTrg(2);
+                RP.SoftTrg(1); 
             end
         end
         % Stop the tone
         function stop(self)
             %trigger for off 
             RP.SoftTrg(2);
+            RP.Halt;
             RP.ClearCOF();
         end
     end

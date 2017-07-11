@@ -107,7 +107,7 @@ hd.hiFreq = 2500; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson point process number centered around 10 
 hd.trialDur = 4000; %ms
-hd.fs = 44100; %samples/sec
+hd.fs = 24414.06; %samples/sec
 
 % INPUT PARAMETERS
 responsewindow = 4; %time allowed to respond = trial duration, s
@@ -573,6 +573,7 @@ function string = waitForChoiceKey(list)
             %avoid error by only stopping if left or right is pressed
             if ~strcmp(events{counter}, 'continue')
                 player.stop;
+                player2.stop;
             end
 
             %get the timestamp of the stimulus stop time 
@@ -610,9 +611,9 @@ function string = waitForChoiceKey(list)
         curFreq = freq{counter};
         playedFreq = curFreq(delaysamp:samples+delaysamp, :);
         numSamples = sum(playedFreq ~= 0);
-        numTones = floor(numSamples / 2205);
-        numHi = floor(sum(playedFreq == hd.hiFreq)/2205);
-        numLo = floor(sum(playedFreq == hd.loFreq)/2205);
+        numTones = floor(numSamples / 1220);
+        numHi = floor(sum(playedFreq == hd.hiFreq)/1220);
+        numLo = floor(sum(playedFreq == hd.loFreq)/1220);
 
         %determine more popular pitch of played tones
         numTones_played(counter) = numTones;

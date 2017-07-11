@@ -1,4 +1,4 @@
-function [auditory, stimulus, frequencies, isHigh] = VisualTones2(loFreq, hiFreq, c, mode)
+function [aud, stimulus, frequencies, isHigh] = VisualTones2(loFreq, hiFreq, c, mode)
 
 %VISUALTONES uses frequency boundaries of the form [loFreq, hiFreq]
 %and a coherence factor (c) to produce a sound stimulus of 2 seconds.  The
@@ -13,9 +13,9 @@ function [auditory, stimulus, frequencies, isHigh] = VisualTones2(loFreq, hiFreq
 %duration in ms
 duration = 50;
 %sampling frequency in samples/sec
-samplingFreq = 44100; %Hz
+samplingFreq = 24414; %Hz
 %number of samples needed
-samples = duration / 1000 * samplingFreq;
+samples = floor(duration / 1000 * samplingFreq);
 %time vector
 t = linspace(0, duration, samples);
 
@@ -32,8 +32,9 @@ xLo = sin((2 * pi * (loFreq/1000)) .* t);
 gatedSineHi = zeros(1, samples);
 gatedSineLo = zeros(1, samples);
 %add 0.5 to make whole number of samples
-numRise = (5 / 1000 * samplingFreq);
-numRiseR = numRise + 0.5;
+numRiseR = floor(5 / 1000 * samplingFreq);
+%numRiseR = numRise + 0.5;
+
 %ramp up
 gatedSineHi (1 : numRiseR)= xHi(1 : numRiseR) ...
     .* (0.2 .* t(1 : numRiseR));
