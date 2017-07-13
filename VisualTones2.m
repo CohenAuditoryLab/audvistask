@@ -137,12 +137,12 @@ isHigh = numHi > numLo;
 
 %% Graphing and playing for testing purposes
 % time = linspace(0, 4000, 2205*40);
-% plot(time, 100.*aud(1:2205*40));
+% plot(time, aud(1:2205*40));
 % hold on;
 % plot(time, vis(1:2205*40), 'LineWidth', 3);
 % ylim([-3.5 3.5])
 
-%sound(stimulus, 44100);
+% sound(stimulus, 44100);
 %disp(stimulus);
 end
 

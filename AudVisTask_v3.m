@@ -33,11 +33,11 @@ list{'meta'}{'saveFilename'} = save_filename;
 %% Settings for generating the sequence of conditions
 
 % number visual modes (not including None)
-block_size = 3; %4;
+block_size = 2; %4;
 % number of trials per visual mode
 block_rep = 100; %1 %15 %50 %75
 % possible visual values to select from
-vis_vals = {'Low', 'High', 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
+vis_vals = {'Low', 'High', 'None'}; %, 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 
 %% Visual conditions for each trial
 
@@ -54,12 +54,8 @@ visualModes = cell(nTrials, 1);
 %each mode will only be selected once per trial
 taskConditions.setPickingMethod('shuffledEach',1);
 
-for j = 1:block_rep
-    visualModes{j} = 'None';
-end
-
 keepGoing = true;
-counter = block_rep;
+counter = 0;
 while keepGoing
     taskConditions.run();
     %add the visual modes in for the length of the block
@@ -107,10 +103,11 @@ hd.hiFreq = 2500; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson point process number centered around 10 
 hd.trialDur = 4000; %ms
-hd.fs = 24414.06; %samples/sec
+hd.fs = 24414; %samples/sec
 
 % INPUT PARAMETERS
-responsewindow = 4; %time allowed to respond = trial duration, s
+responsewindow = 5.6; %time allowed to respond = trial duration, s
+                      %4 s for stimulus, .6 second for cue and 1 s delay
 list{'Input'}{'responseWindow'} = responsewindow;
 
 % CREATE AUDIOPLAYERS
@@ -118,11 +115,8 @@ player = dotsPlayableWave_TDT();
 player.sampleFrequency = hd.fs;
 player.duration = hd.trialDur; %ms
 player.intensity = 1;
-player2 = dotsPlayableWave_TDT2();
-player2.sampleFrequency = hd.fs;
-player2.duration = hd.trialDur; %ms
-player2.intensity = 1;
 %% Time Variables
+
 iti = 1; %seconds
 list{'timing'}{'intertrial'} = iti; %intertrial interval
 %% Input Settings
@@ -536,6 +530,7 @@ function string = waitForChoiceKey(list)
     stim_start = list{'Timestamps'}{'stim_start'};
     responsewindow = list{'Input'}{'responseWindow'};
     choices = list{'Input'}{'choices'};
+    player = list{'Stimulus'}{'player'};
 
     % whether it's a high-freq trial
     isH = list{'Stimulus'}{'isH'}; 
@@ -555,6 +550,7 @@ function string = waitForChoiceKey(list)
     while ~strcmp(press, 'left') && ~strcmp(press, 'right')
         %Break loop if responsewindow time expires and move to next trial
         if toc > responsewindow 
+            player.stop;
             choice = NaN;
             timestamp = NaN;
             break
@@ -573,7 +569,6 @@ function string = waitForChoiceKey(list)
             %avoid error by only stopping if left or right is pressed
             if ~strcmp(events{counter}, 'continue')
                 player.stop;
-                player2.stop;
             end
 
             %get the timestamp of the stimulus stop time 
@@ -584,9 +579,6 @@ function string = waitForChoiceKey(list)
             list{'Timestamps'}{'stim_stop'} = stim_stop;
         end 
     end
-
-    %Get intertrial interval
-    iti = list{'timing'}{'intertrial'};
 
     %Get timestamp of button press time 
     if ~isempty(press)
@@ -705,7 +697,6 @@ function playstim(list)
     counter = list{'Counter'}{'trial'};
     coh_list = list{'control'}{'cohLevels'};
     visualModes = list{'control'}{'visualModes'};
-
     hd = list{'Stimulus'}{'header'};
     
     %produce the stimulus
@@ -725,11 +716,11 @@ function playstim(list)
     if r <= 1
         chosen = 'Speaker 1';
         player.wave = new_target;
-        player2.wave = new_masker;
+        player.masker = new_masker;
     else 
         chosen = 'Speaker 2';
+        player.masker = new_target;
         player.wave = new_masker;
-        player2.wave = new_target;
     end 
     %store target speaker 
     speaker = list{'Stimulus'}{'speaker'};
@@ -738,9 +729,7 @@ function playstim(list)
     
     %play stimuli in correct speakers  
     player.preparetoPlay;
-    player2.preparetoPlay;
     player.play;
-    player2.play;
 
     %log stimulus timestamps 
     stim_start = list{'Timestamps'}{'stim_start'};
