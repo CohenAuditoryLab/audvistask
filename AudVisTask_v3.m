@@ -33,9 +33,9 @@ list{'meta'}{'saveFilename'} = save_filename;
 %% Settings for generating the sequence of conditions
 
 % number visual modes (not including None)
-block_size = 2; %4;
+block_size = 3; %4;
 % number of trials per visual mode
-block_rep = 100; %1 %15 %50 %75
+block_rep = 125; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'Low', 'High', 'None'}; %, 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 

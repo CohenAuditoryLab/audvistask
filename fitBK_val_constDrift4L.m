@@ -23,8 +23,16 @@ params5 = params([1, 18, 19, 20, 21]);
 mu1 = (params(1)/100000) .* cohs(:,1);
 mu2 = (params(1)/100000) .* cohs(:,2);
 mu3 = (params(1)/100000) .* cohs(:,3);
-mu4 = (params(1)/100000) .* cohs(:,4);
-mu5 = (params(1)/100000) .* cohs(:,5);
+if size(cohs, 2) > 3
+    mu4 = (params(1)/100000) .* cohs(:,4);
+else 
+    mu4 = 0;
+end 
+if size(cohs,2) > 4
+    mu5 = (params(1)/100000) .* cohs(:,5);
+else 
+    mu5 = 0;
+end
 
 % scale bounds
 A1 = params1(2)/10;
@@ -66,23 +74,34 @@ eB3 = exp(2 .* mu3.* B3);
 ps_3 = (eB3 .* eA3 - eA3) ./ (eB3 .* eA3 - 1);
 ps_3(abs(cohs(:,3))<=eps) = B3 ./ (A3 + B3);
 
-eA4 = exp(2 .* mu4.* A4);
-eB4 = exp(2 .* mu4.* B4);
-ps_4 = (eB4 .* eA4 - eA4) ./ (eB4 .* eA4 - 1);
-ps_4(abs(cohs(:,4))<=eps) = B4 ./ (A4 + B4);
+if size(cohs, 2) > 3
 
-eA5 = exp(2 .* mu5.* A5);
-eB5 = exp(2 .* mu5.* B5);
-ps_5 = (eB5 .* eA5 - eA5) ./ (eB5 .* eA5 - 1);
-ps_5(abs(cohs(:,5))<=eps) = B5 ./ (A5 + B5);
+    eA4 = exp(2 .* mu4.* A4);
+    eB4 = exp(2 .* mu4.* B4);
+    ps_4 = (eB4 .* eA4 - eA4) ./ (eB4 .* eA4 - 1);
+    ps_4(abs(cohs(:,4))<=eps) = B4 ./ (A4 + B4);
+end
+
+if size(cohs, 2) > 4
+
+    eA5 = exp(2 .* mu5.* A5);
+    eB5 = exp(2 .* mu5.* B5);
+    ps_5 = (eB5 .* eA5 - eA5) ./ (eB5 .* eA5 - 1);
+    ps_5(abs(cohs(:,5))<=eps) = B5 ./ (A5 + B5);
+end 
 
 % if lapse given
 if nargin > 2
     ps_1 = lapse(1) + (1-2.*lapse(1)).*ps_1;
     ps_2 = lapse(2) + (1-2.*lapse(2)).*ps_2;
     ps_3 = lapse(3) + (1-2.*lapse(3)).*ps_3;
-    ps_4 = lapse(4) + (1-2.*lapse(4)).*ps_4;
-    ps_5 = lapse(5) + (1-2.*lapse(5)).*ps_5;
+    
+    if length(lapse) > 3
+        ps_4 = lapse(4) + (1-2.*lapse(4)).*ps_4;
+    end 
+    if length(lapse) > 4
+        ps_5 = lapse(5) + (1-2.*lapse(5)).*ps_5;
+    end
 end
 
 % CMF
@@ -106,12 +125,16 @@ rts_2(Lpt1) = (A2 + B2) ./ mu2(Lpt1) ./ tanh((A2 + B2) .* mu2(Lpt1)) - ...
 Lpt1 = cohs(:,3) > eps;
 rts_3(Lpt1) = (A3 + B3) ./ mu3(Lpt1) ./ tanh((A3 + B3) .* mu3(Lpt1)) - ...
     B3 ./ mu3(Lpt1) ./ tanh(B3 .* mu3(Lpt1)) + Andt3;
-Lpt1 = cohs(:,4) > eps;
-rts_4(Lpt1) = (A4 + B4) ./ mu4(Lpt1) ./ tanh((A4 + B4) .* mu4(Lpt1)) - ...
-    B4 ./ mu4(Lpt1) ./ tanh(B4 .* mu4(Lpt1)) + Andt4;
-Lpt1 = cohs(:,5) > eps;
-rts_5(Lpt1) = (A5 + B5) ./ mu5(Lpt1) ./ tanh((A5 + B5) .* mu5(Lpt1)) - ...
-    B5 ./ mu5(Lpt1) ./ tanh(B5 .* mu5(Lpt1)) + Andt5;
+if size(cohs, 2) > 3
+    Lpt1 = cohs(:,4) > eps;
+    rts_4(Lpt1) = (A4 + B4) ./ mu4(Lpt1) ./ tanh((A4 + B4) .* mu4(Lpt1)) - ...
+        B4 ./ mu4(Lpt1) ./ tanh(B4 .* mu4(Lpt1)) + Andt4;
+end 
+if size(cohs, 2) > 4
+    Lpt1 = cohs(:,5) > eps;
+    rts_5(Lpt1) = (A5 + B5) ./ mu5(Lpt1) ./ tanh((A5 + B5) .* mu5(Lpt1)) - ...
+        B5 ./ mu5(Lpt1) ./ tanh(B5 .* mu5(Lpt1)) + Andt5;
+end
 
 % zero ivar, T1 choice
 L0t1 = cohs(:,1) >= 0 & cohs(:,1) <= eps; 
@@ -120,10 +143,14 @@ L0t1 = cohs(:,2) >= 0 & cohs(:,2) <= eps;
 rts_2(L0t1) = (A2.^2 + 2 .* A2 .* B2) ./ 3 + Andt2;
 L0t1 = cohs(:,3) >= 0 & cohs(:,3) <= eps; 
 rts_3(L0t1) = (A3.^2 + 2 .* A3 .* B3) ./ 3 + Andt3;
-L0t1 = cohs(:,4) >= 0 & cohs(:,4) <= eps; 
-rts_4(L0t1) = (A4.^2 + 2 .* A4 .* B4) ./ 3 + Andt4;
-L0t1 = cohs(:,5) >= 0 & cohs(:,5) <= eps; 
-rts_5(L0t1) = (A5.^2 + 2 .* A5 .* B5) ./ 3 + Andt5;
+if size(cohs, 2) > 3
+    L0t1 = cohs(:,4) >= 0 & cohs(:,4) <= eps; 
+    rts_4(L0t1) = (A4.^2 + 2 .* A4 .* B4) ./ 3 + Andt4;
+end 
+if size(cohs, 2) > 4
+    L0t1 = cohs(:,5) >= 0 & cohs(:,5) <= eps; 
+    rts_5(L0t1) = (A5.^2 + 2 .* A5 .* B5) ./ 3 + Andt5;
+end 
 
 % negative ivar, T2 choice
 Lnt2 = cohs(:,1) < -eps;
@@ -135,12 +162,16 @@ rts_2(Lnt2) = (A2 + B2) ./ mu2(Lnt2) ./ tanh((A2 + B2) .* mu2(Lnt2)) - ...
 Lnt2 = cohs(:,3) < -eps;
 rts_3(Lnt2) = (A3 + B3) ./ mu3(Lnt2) ./ tanh((A3 + B3) .* mu3(Lnt2)) - ...
     A3 ./ mu3(Lnt2) ./ tanh(A3 .* mu3(Lnt2)) + Bndt3;
-Lnt2 = cohs(:,4) < -eps;
-rts_4(Lnt2) = (A4 + B4) ./ mu4(Lnt2) ./ tanh((A4 + B4) .* mu4(Lnt2)) - ...
-    A4 ./ mu4(Lnt2) ./ tanh(A4 .* mu4(Lnt2)) + Bndt4;
-Lnt2 = cohs(:,5) < -eps;
-rts_5(Lnt2) = (A5 + B5) ./ mu5(Lnt2) ./ tanh((A5 + B5) .* mu5(Lnt2)) - ...
-    A5 ./ mu5(Lnt2) ./ tanh(A5 .* mu5(Lnt2)) + Bndt5;
+if size(cohs,2) > 3
+    Lnt2 = cohs(:,4) < -eps;
+    rts_4(Lnt2) = (A4 + B4) ./ mu4(Lnt2) ./ tanh((A4 + B4) .* mu4(Lnt2)) - ...
+        A4 ./ mu4(Lnt2) ./ tanh(A4 .* mu4(Lnt2)) + Bndt4;
+end 
+if size(cohs,2) > 4
+    Lnt2 = cohs(:,5) < -eps;
+    rts_5(Lnt2) = (A5 + B5) ./ mu5(Lnt2) ./ tanh((A5 + B5) .* mu5(Lnt2)) - ...
+        A5 ./ mu5(Lnt2) ./ tanh(A5 .* mu5(Lnt2)) + Bndt5;
+end 
 
 % zero ivar, T2 choice
 L0t2 = cohs(:,1) <= 0 & cohs(:,1) >= -eps; 
@@ -149,10 +180,22 @@ L0t2 = cohs(:,2) <= 0 & cohs(:,2) >= -eps;
 rts_2(L0t2) = (B2.^2 + 2 .* A2 .* B2) ./ 3 + Bndt2;
 L0t2 = cohs(:,3) <= 0 & cohs(:,3) >= -eps; 
 rts_3(L0t2) = (B3.^2 + 2 .* A3 .* B3) ./ 3 + Bndt3;
-L0t2 = cohs(:,4) <= 0 & cohs(:,4) >= -eps; 
-rts_4(L0t2) = (B4.^2 + 2 .* A4 .* B4) ./ 3 + Bndt4;
-L0t2 = cohs(:,5) <= 0 & cohs(:,5) >= -eps; 
-rts_5(L0t2) = (B5.^2 + 2 .* A5 .* B5) ./ 3 + Bndt5;
+if size(cohs, 2) > 3
+    L0t2 = cohs(:,4) <= 0 & cohs(:,4) >= -eps; 
+    rts_4(L0t2) = (B4.^2 + 2 .* A4 .* B4) ./ 3 + Bndt4;
+end 
+if size(cohs, 2) > 4
+    L0t2 = cohs(:,5) <= 0 & cohs(:,5) >= -eps; 
+    rts_5(L0t2) = (B5.^2 + 2 .* A5 .* B5) ./ 3 + Bndt5;
+end 
 
-ps_ = [ps_1, ps_2, ps_3, ps_4, ps_5];
-rts_ = [rts_1, rts_2, rts_3, rts_4, rts_5];
+ps_ = [ps_1, ps_2, ps_3]; 
+rts_ = [rts_1, rts_2, rts_3];
+if size(cohs, 2) > 3
+    ps_ = [ps_, ps_4];
+    rts_ = [rts_, rts_4];
+end 
+if size(cohs, 2) > 4
+    ps_ = [ps_, ps_5];
+    rts_ = [rts_, rts_5];
+end 
