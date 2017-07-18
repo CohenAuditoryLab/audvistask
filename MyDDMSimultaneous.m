@@ -400,55 +400,53 @@ if err_AB2 < err_AB
     err_AB = err_AB2;
 end
 
-% %% Simultaneous curve fit, holding ONLY bound A constant
-%
-% %define x0, lower and upper bounds
-% X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
-%     200 200 200 200];
-% Xlb = [0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01...
-%     0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01];
-% Xub = [50000 50000 50000 2000 2000 50000 50000 2000 2000 50000, ...
-%     50000 2000 2000 50000 50000 2000 2000 50000 50000 2000 2000];
-%
-% [fits_A,err_A] = patternsearch(@(ft)fitBK_err_constBoundA(ft, ...
-%     data_all, [lapse1, lapse2, lapse3, lapse4, lapse5]), ...
-%     X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
-%     'MaxIter', 30000, 'MaxFunEvals', 30000));
-% [fits_A1, err_A1] = fmincon(@(ft)fitBK_err_constBoundA(ft, data_all, ...
-%     [lapse1, lapse2, lapse3, lapse4, lapse5]), X0, [], [], [], [], ...
-%     Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
-%     'MaxFunEvals', 40000));
-%
-% % save the best fit between the two methods
-% if err_A1 < err_A
-%     fits_A = fits_A1;
-%     err_A = err_A1;
-% end
-%
-% %% Simultaneous curve fit, holding ONLY bound B constant
-%
-% %define x0, lower and upper bounds
-% X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
-%     200 200 200 200];
-% Xlb = [0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01...
-%     0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01];
-% Xub = [50000 50000 50000 2000 2000 50000 50000 2000 2000 50000, ...
-%     50000 2000 2000 50000 50000 2000 2000 50000 50000 2000 2000];
-%
-% [fits_B,err_B] = patternsearch(@(fitt)fitBK_err_constBoundA(fitt, ...
-%     data_all, [lapse1, lapse2, lapse3, lapse4, lapse5]), ...
-%     X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
-%     'MaxIter', 30000, 'MaxFunEvals', 30000));
-% [fits_B2, err_B2] = fmincon(@(fitt)fitBK_err_constBoundB(fitt, data_all, ...
-%     [lapse1, lapse2, lapse3, lapse4, lapse5]), X0, [], [], [], [], ...
-%     Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
-%     'MaxFunEvals', 40000));
-%
-% % save the best fit between the two methods
-% if err_B2 < err_B
-%     fits_B = fits_B2;
-%     err_B = err_B2;
-% end
+%% Simultaneous curve fit, holding ONLY bound A constant
+
+%define x0, lower and upper bounds
+X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
+    200 200 200 200];
+Xlb = [0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01...
+    0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01];
+Xub = [50000 50000 50000 2000 2000 50000 50000 2000 2000 50000, ...
+    50000 2000 2000 50000 50000 2000 2000 50000 50000 2000 2000];
+
+[fits_A,err_A] = patternsearch(@(ft)fitBK_err_constBoundA(ft, ...
+    data_all, lapse), X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
+    'MaxIter', 30000, 'MaxFunEvals', 30000));
+[fits_A1, err_A1] = fmincon(@(ft)fitBK_err_constBoundA(ft, data_all, ...
+    lapse), X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
+    'MaxFunEvals', 40000));
+
+% save the best fit between the two methods
+if err_A1 < err_A
+    fits_A = fits_A1;
+    err_A = err_A1;
+end
+
+%% Simultaneous curve fit, holding ONLY bound B constant
+
+%define x0, lower and upper bounds
+X0  = [200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200, ...
+    200 200 200 200];
+Xlb = [0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01...
+    0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01];
+Xub = [50000 50000 50000 2000 2000 50000 50000 2000 2000 50000, ...
+    50000 2000 2000 50000 50000 2000 2000 50000 50000 2000 2000];
+
+[fits_B,err_B] = patternsearch(@(fitt)fitBK_err_constBoundB(fitt, ...
+    data_all, [lapse1, lapse2, lapse3, lapse4, lapse5]), ...
+    X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
+    'MaxIter', 30000, 'MaxFunEvals', 30000));
+[fits_B2, err_B2] = fmincon(@(fitt)fitBK_err_constBoundB(fitt, data_all, ...
+    [lapse1, lapse2, lapse3, lapse4, lapse5]), X0, [], [], [], [], ...
+    Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
+    'MaxFunEvals', 40000));
+
+% save the best fit between the two methods
+if err_B2 < err_B
+    fits_B = fits_B2;
+    err_B = err_B2;
+end
 
 %% Determine the best of the models
 %use BIC or AIC to determine the best fit model
@@ -458,8 +456,8 @@ end
 % err_mu = -100000000;
 
 %%%BIC is "harsher" on free parameters than AIC
-errors = [err_indep, err_mu, err_AB]; %, err_A, err_B];
-[aic, bic] = aicbic(errors, [5, 4, 3], block_size .* ones(length(errors),1));
+errors = [err_indep, err_mu, err_AB, err_A]; %, err_B];
+[aic, bic] = aicbic(errors, [5, 4, 3, 4], block_size .* ones(length(errors),1));
 [~, index] = min(aic);
 
 if index == 1
@@ -521,42 +519,42 @@ elseif index == 3
     end
     
     t = 'Constant Both Bounds';
-    % elseif index == 4
-    %     M = repmat(cfax', 1, 5);
-    %     [ps, rts] = fitBK_val_constBoundA4L(M, fits_A, [lapse1, lapse2, lapse3, ...
-    %         lapse4, lapse5]);
-    %
-    %     ps1 = ps(:, 1);
-    %     ps2 = ps(:, 2);
-    %     ps3 = ps(:, 3);
-    %     ps4 = ps(:, 4);
-    %     ps5 = ps(:, 5);
-    %
-    %     rts1 = rts(:, 1);
-    %     rts2 = rts(:, 2);
-    %     rts3 = rts(:, 3);
-    %     rts4 = rts(:, 4);
-    %     rts5 = rts(:, 5);
-    %
-    %     t = 'Constant Bound A';
-    % elseif index == 5
-    %     M = repmat(cfax', 1, 5);
-    %     [ps, rts] = fitBK_val_constBoundB4L(M, fits_B, [lapse1, lapse2, lapse3, ...
-    %         lapse4, lapse5]);
-    %
-    %     ps1 = ps(:, 1);
-    %     ps2 = ps(:, 2);
-    %     ps3 = ps(:, 3);
-    %     ps4 = ps(:, 4);
-    %     ps5 = ps(:, 5);
-    %
-    %     rts1 = rts(:, 1);
-    %     rts2 = rts(:, 2);
-    %     rts3 = rts(:, 3);
-    %     rts4 = rts(:, 4);
-    %     rts5 = rts(:, 5);
-    %
-    %     t = 'Constant Bound B';
+elseif index == 4
+        M = repmat(cfax', 1, 5);
+        [ps, rts] = fitBK_val_constBoundA4L(M, fits_A, [lapse1, lapse2, lapse3, ...
+            lapse4, lapse5]);
+    
+        ps1 = ps(:, 1);
+        ps2 = ps(:, 2);
+        ps3 = ps(:, 3);
+        ps4 = ps(:, 4);
+        ps5 = ps(:, 5);
+    
+        rts1 = rts(:, 1);
+        rts2 = rts(:, 2);
+        rts3 = rts(:, 3);
+        rts4 = rts(:, 4);
+        rts5 = rts(:, 5);
+    
+        t = 'Constant Bound A';
+elseif index == 5
+        M = repmat(cfax', 1, 5);
+        [ps, rts] = fitBK_val_constBoundB4L(M, fits_B, [lapse1, lapse2, lapse3, ...
+            lapse4, lapse5]);
+    
+        ps1 = ps(:, 1);
+        ps2 = ps(:, 2);
+        ps3 = ps(:, 3);
+        ps4 = ps(:, 4);
+        ps5 = ps(:, 5);
+    
+        rts1 = rts(:, 1);
+        rts2 = rts(:, 2);
+        rts3 = rts(:, 3);
+        rts4 = rts(:, 4);
+        rts5 = rts(:, 5);
+    
+        t = 'Constant Bound B';
 end
 %% PLOTZ
 
@@ -859,6 +857,92 @@ elseif index == 3
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
     legend(v,blocks)
+    
+elseif index == 4
+    
+    %Horizontal shifts of these lines imply changes in the mean rate-of-rise
+    %swivels about a fixed point at infinite RT imply changes in the bound height
+    subplot(3,1,2); cla reset; hold on;
+    %%%block 1
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
+    g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
+    plot([0 100], fits_A([4 4]), 'k--');
+    plot([-100 0], fits_A([5 5]), 'k--');
+    %%%block 2
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
+    g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
+    plot([0 100], fits_A([8 8]), 'r--');
+    plot([-100 0], fits_A([9 9]), 'r--');
+    %%%block 3
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
+    g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
+    plot([0 100], fits_A([12 12]), 'b--');
+    plot([-100 0], fits_A([13 13]), 'b--');
+    
+    g = [g1 g2 g3];
+    
+    if num_blocks > 3
+        %%%block 4
+        plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 12);
+        plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 12);
+        g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
+        plot([0 100], fits_A([16 16]), 'g--');
+        plot([-100 0], fits_A([17 17]), 'g--');
+        
+        g = [g g4];
+    end 
+    if num_blocks > 4
+        %%%block5
+        plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+        plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
+        g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
+        plot([0 100], fits_A([20 20]), 'm--');
+        plot([-100 0], fits_A([21 21]), 'm--');
+        
+        g = [g g5];
+    end
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Response time (ms)')
+    legend(g, blocks)
+    
+    subplot(3,1,3); cla reset; hold on;
+    %%%block 1
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_A(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_A(4), 'k-', 'LineWidth', 0.75);
+    %%%block 2
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_A(9), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_A(8), 'r-', 'LineWidth', 0.75);
+    %%%block 3
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_A(13), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_A(12), 'b-', 'LineWidth', 0.75);
+    
+    v = [v1 v2 v3];
+    
+    if num_blocks > 3
+        %%%block 4
+        plot(cfax(cfax<0), (rts4(cfax<0))'-fits_A(17), 'g-', 'LineWidth', 0.75);hold on;
+        v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_A(16), 'g-', 'LineWidth', 0.75);
+        
+        v = [v v4];
+    end
+    if num_blocks > 4
+        %%%block 5
+        plot(cfax(cfax<0), (rts5(cfax<0))'-fits_A(21), 'm-', 'LineWidth', 0.75);hold on;
+        v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_A(20), 'm-', 'LineWidth', 0.75);
+        
+        v = [v v5];
+    end
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Decision time (ms): RT-nonDT')
+    legend(v,blocks)
+    
+elseif index == 5 
+        
     
 end
 

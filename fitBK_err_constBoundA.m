@@ -1,30 +1,44 @@
 function err_ = fitBK_err_constBoundA(fits, data, lapse)
 % 
 % fits are from fitBK_val_constBoundsA4L
+    
+l = size(data, 2);
 
-cohs = [data(:,1), data(:,5), data(:,9), data(:,13), data(:,17)];
-[ps, rts] = fitBK_val_constBounds3L(cohs, fits, lapse);
+cohs = [data(:,1), data(:,5), data(:,9)];
+
+if l >= 13
+    cohs = [cohs, data(:, 13)];
+end 
+if l >= 17
+    cohs = [cohs, data(:, 17)];
+end
+
+[ps, rts] = fitBK_val_constBoundsA4L(cohs, fits, lapse);
 
 % logL of pmf
 logpPMF1 = log(binopdf(data(:,2), 1, ps(:,1)));
 logpPMF1(~isfinite(logpPMF1)) = -200;
 logLp1   = sum(logpPMF1);
 
-logpPMF2 = log(binopdf(data(:,6), 1, ps(:, 2)));
+logpPMF2 = log(binopdf(data(:,6), 1, ps(:,2)));
 logpPMF2(~isfinite(logpPMF2)) = -200;
 logLp2   = sum(logpPMF2);
 
-logpPMF3 = log(binopdf(data(:,10), 1, ps(:, 3)));
+logpPMF3 = log(binopdf(data(:,10), 1, ps(:,3)));
 logpPMF3(~isfinite(logpPMF3)) = -200;
 logLp3   = sum(logpPMF3);
 
-logpPMF4 = log(binopdf(data(:,14), 1, ps(:, 4)));
-logpPMF4(~isfinite(logpPMF4)) = -200;
-logLp4   = sum(logpPMF4);
+if l >= 13
+    logpPMF4 = log(binopdf(data(:,14), 1, ps(:,4)));
+    logpPMF4(~isfinite(logpPMF4)) = -200;
+    logLp4   = sum(logpPMF4);
+end
 
-logpPMF5 = log(binopdf(data(:,18), 1, ps(:, 5)));
-logpPMF5(~isfinite(logpPMF5)) = -200;
-logLp5   = sum(logpPMF5);
+if l >= 17
+    logpPMF5 = log(binopdf(data(:,18), 1, ps(:,5)));
+    logpPMF5(~isfinite(logpPMF5)) = -200;
+    logLp5   = sum(logpPMF5);
+end
 
 % logL of cmf -- only for non-zero CORRECT trials
 % assume RT variance is the same per condition, measured from the data
@@ -49,25 +63,35 @@ logpCMF3 = log(normpdf(msrts3, 0, std(msrts3)));
 logpCMF3(~isfinite(logpCMF3)) = -200; 
 logLc3   = sum(logpCMF3);
 
-Lgood4   = data(:,16) == 1;
-rts4 = rts(:, 4);
-msrts4   = data(Lgood4,3) - rts4(Lgood4);
-logpCMF4 = log(normpdf(msrts4, 0, std(msrts4)));
-logpCMF4(~isfinite(logpCMF4)) = -200;
-logLc4   = sum(logpCMF4);
+if l >= 16
+    Lgood4   = data(:,16) == 1;
+    rts4 = rts(:, 4);
+    msrts4   = data(Lgood4,3) - rts4(Lgood4);
+    logpCMF4 = log(normpdf(msrts4, 0, std(msrts4)));
+    logpCMF4(~isfinite(logpCMF4)) = -200;
+    logLc4   = sum(logpCMF4);
+end
 
-Lgood5   = data(:,20) == 1;
-rts5 = rts(:, 5);
-msrts5   = data(Lgood5,3) - rts5(Lgood5);
-logpCMF5 = log(normpdf(msrts5, 0, std(msrts5)));
-logpCMF5(~isfinite(logpCMF5)) = -200;
-logLc5   = sum(logpCMF5);
+if l >= 20
+    Lgood5   = data(:,20) == 1;
+    rts5 = rts(:, 5);
+    msrts5   = data(Lgood5,3) - rts5(Lgood5);
+    logpCMF5 = log(normpdf(msrts5, 0, std(msrts5)));
+    logpCMF5(~isfinite(logpCMF5)) = -200;
+    logLc5   = sum(logpCMF5);
+end
 
 % err_ is negative sum of the log likelihoods
-err_ = -(logLp1 + logLc1 + logLp2 + logLc2 + logLp3 + logLc3 + logLp4 + ...
-    logLc4 + logLp5 + logLc5);
+err_ = -(logLp1 + logLc1 + logLp2 + logLc2 + logLp3 + logLc3);
+if l > 12
+    err_ = err_ -(logLp4 + logLc4);
+end
+if l > 16
+    err_ = err_ -(logLp5 + logLc5);
+end
 if isnan(err_)
     err_ = inf;
 end
 
 end
+

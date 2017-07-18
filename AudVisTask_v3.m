@@ -1,6 +1,7 @@
 function [task, list] = AudVisTask_v3(dispInd)
 %% 05-22-2017 created by Brianna - Auditory Visual Task
 %%Using VisualTones2, Create Stimulus, AddSpeakerCue
+%%Sending triggers to ActiveX on PC using Serial Port
 %% Setting up the screen
 
 isClient = false;
@@ -32,8 +33,8 @@ list{'meta'}{'saveFilename'} = save_filename;
 
 %% Settings for generating the sequence of conditions
 
-% number visual modes (not including None)
-block_size = 3; %4;
+% number visual modes
+block_size = 3; 
 % number of trials per visual mode
 block_rep = 125; %1 %15 %50 %75
 % possible visual values to select from
@@ -80,7 +81,7 @@ list{'Counter'}{'trial'} = 0;
 
 %possible coherences
 %most data should be collected between about 25 and 75
-coherences = [0, .1, .25, .33, .40, .45, .50, .55, .60, .67, .75, .9, 1];
+coherences = [0.00, 0.10, 0.25, 0.33, 0.40, 0.45, 0.50, 0.55, 0.60, 0.67, 0.75, 0.90, 1.00];
 
 for i = 1:nTrials
     %add coherence as a condition
@@ -104,17 +105,18 @@ hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson point process number centered around 10 
 hd.trialDur = 4000; %ms
 hd.fs = 24414; %samples/sec
+hd.delay = 1.6; %sec
 
 % INPUT PARAMETERS
-responsewindow = 5.6; %time allowed to respond = trial duration, s
+responsewindow = hd.trialDur/1000 + hd.delay; %time allowed to respond = trial duration, s
                       %4 s for stimulus, .6 second for cue and 1 s delay
 list{'Input'}{'responseWindow'} = responsewindow;
 
-% CREATE AUDIOPLAYERS
-player = dotsPlayableWave_TDT();
-player.sampleFrequency = hd.fs;
-player.duration = hd.trialDur; %ms
-player.intensity = 1;
+% OPEN SERIAL PORT CONNECTION TO PC
+delete(instrfindall);
+s = serial('/dev/tty.KeySerial1');
+fopen(s);
+
 %% Time Variables
 
 iti = 1; %seconds
@@ -199,16 +201,8 @@ list{'Input'}{'controller'} = ui;
 
 %STIMULUS INFORMATION
 list{'Stimulus'}{'header'} = hd;
-list{'Stimulus'}{'player'} = player;
-list{'Stimulus'}{'waveforms'} = cell(nTrials,1);
-list{'Stimulus'}{'masker'} = cell(nTrials,1);
 list{'Stimulus'}{'speaker'} = cell(nTrials,1);
-list{'Stimulus'}{'freq'} = cell(nTrials,1);
-list{'Stimulus'}{'isH'} = zeros(nTrials,1);
 list{'Stimulus'}{'bursts'} = zeros(nTrials,136);
-list{'Stimulus'}{'isH_played'} = zeros(nTrials,1);
-list{'Stimulus'}{'coh_played'} = zeros(nTrials,1);
-list{'Stimulus'}{'numTones_played'} = zeros(nTrials,1);
 
 %TIMESTAMPS
 list{'Timestamps'}{'stim_start'} = zeros(nTrials,1);
@@ -381,7 +375,7 @@ list{'control'}{'mainMachine'} = mainMachine;
 % End Machine - used in post-task
 endMachine = topsStateMachine();
 endStates = {'name', 'entry', 'input', 'exit', 'timeout', 'next';
-    'Ready', {@startEndTask list},      {},      {@waitForCheckKey list},     0,       'Hide';
+    'Ready', {@startEndTask list s},      {},      {@waitForCheckKey list},     0,       'Hide';
     'Hide', {hide [ready2 button2]}, {}, {}, 0, 'Finish';
     'Finish', {}, {}, {}, 0, '';};
 endMachine.addMultipleStates(endStates);
@@ -427,7 +421,7 @@ end
 
 %% Accessory Functions
 
-function startEndTask(list)
+function startEndTask(list, s)
     ensemble = list{'Graphics'}{'ensemble'};
     low = list{'Graphics'}{'low'};
     high = list{'Graphics'}{'high'};
@@ -451,6 +445,9 @@ function startEndTask(list)
     %make visible
     ensemble.setObjectProperty('isVisible', true, ready2);
     ensemble.setObjectProperty('isVisible', true, button2);
+    
+    %close serial port
+    fclose(s);
 end
 
 function startTrial(list, block_rep)
@@ -473,7 +470,7 @@ function startTrial(list, block_rep)
     
     b = int16(ceil((counter/block_rep)));
     block = dotsDrawableText();
-    block.string = sprintf('Block %d of 4', b);
+    block.string = sprintf('Block %d of 3', b);
     block.typefaceName = 'Calibri';
     block.isVisible = false;
     block.x = 0;
@@ -524,19 +521,10 @@ function string = waitForChoiceKey(list)
     ensemble = list{'Graphics'}{'ensemble'};
     target = list{'Graphics'}{'target'};
     ui = list{'Input'}{'controller'};
-    player = list{'Stimulus'}{'player'};
-    freq = list{'Stimulus'}{'freq'};
     hd = list{'Stimulus'}{'header'};
     stim_start = list{'Timestamps'}{'stim_start'};
     responsewindow = list{'Input'}{'responseWindow'};
     choices = list{'Input'}{'choices'};
-    player = list{'Stimulus'}{'player'};
-
-    % whether it's a high-freq trial
-    isH = list{'Stimulus'}{'isH'}; 
-    isH_played = list{'Stimulus'}{'isH_played'};
-    coh_played = list{'Stimulus'}{'coh_played'};
-    numTones_played = list{'Stimulus'}{'numTones_played'};
 
     %clear existing data 
     ui.flushData 
@@ -550,7 +538,7 @@ function string = waitForChoiceKey(list)
     while ~strcmp(press, 'left') && ~strcmp(press, 'right')
         %Break loop if responsewindow time expires and move to next trial
         if toc > responsewindow 
-            player.stop;
+           	fprintf(s, 'no');
             choice = NaN;
             timestamp = NaN;
             break
@@ -560,7 +548,7 @@ function string = waitForChoiceKey(list)
         press = '';
         read(ui);
         [~, ~, eventname, ~] = ui.getHappeningEvent();
-        events = cell(length(coh_played), 1);
+        events = cell(length(choices), 1);
 
         if ~isempty(eventname) && length(eventname) == 1
             press = eventname;
@@ -568,7 +556,7 @@ function string = waitForChoiceKey(list)
             %stop the stimulus once a response is detected 
             %avoid error by only stopping if left or right is pressed
             if ~strcmp(events{counter}, 'continue')
-                player.stop;
+                fprintf(s, 'no');
             end
 
             %get the timestamp of the stimulus stop time 
@@ -589,43 +577,21 @@ function string = waitForChoiceKey(list)
 
         %calculate reaction time 
         rt = (timestamp - stim_start(counter)) * 1000; %ms
-        delay = 6*50 + 500; %ms
+        delay = hd.delay; %ms
         rt = rt - delay;
-        delaysamp = floor(delay / 1000 * hd.fs);
         %record current choice 
         cur_choice = press{1};
-
-        %get the number of tones played
-        freq = list{'Stimulus'}{'freq'};
-        %convert reaction time to number of samples 
-        samples = floor(rt / 1000 * hd.fs);
-        %get frequencies corresponding to played samples
-        curFreq = freq{counter};
-        playedFreq = curFreq(delaysamp:samples+delaysamp, :);
-        numSamples = sum(playedFreq ~= 0);
-        numTones = floor(numSamples / 1220);
-        numHi = floor(sum(playedFreq == hd.hiFreq)/1220);
-        numLo = floor(sum(playedFreq == hd.loFreq)/1220);
-
-        %determine more popular pitch of played tones
-        numTones_played(counter) = numTones;
-        coh_played(counter) = numHi/numTones;
-        isH_played(counter) = numHi > numLo;
     else 
         rt = NaN;
         cur_choice = NaN;
     end 
 
-    cur_f = isH(counter) + 1; %isH : 2 - high | 1 - low
+    cur_f = (coh_list(counter) > 0.50) + 1; %isH : 2 - high | 1 - low
 
     %Update choices list 
     timestamps = list{'Timestamps'}{'choices'};
     timestamps(counter) = timestamp;
     list{'Timestamps'}{'choices'} = timestamps;
-
-    list{'Stimulus'}{'isH_played'} = isH_played;
-    list{'Stimulus'}{'coh_played'} = coh_played;
-    list{'Stimulus'}{'numTones_played'} = numTones_played;
 
     %assign choices and set target positions
     if strcmp(press, 'right')
@@ -699,57 +665,30 @@ function playstim(list)
     visualModes = list{'control'}{'visualModes'};
     hd = list{'Stimulus'}{'header'};
     
-    %produce the stimulus
-%     [waveform, full_stimulus, f, h] = VisualTones2(hd.loFreq, hd.hiFreq,...
-%         coh_list(counter), visualModes{counter});
-    [waveform, full_target, f, h, masker_waveform, full_masker] = ...
-        CreateStimulus(hd.loFreq, hd.hiFreq, coh_list(counter),...
-        visualModes{counter});
-    %add speaker cue to stimuli
-    [new_target, new_masker] = AddSpeakerCue(full_target, full_masker);
-    
-    %target information 
-    player = list{'Stimulus'}{'player'};    
-    
     %decide which speaker gets target and which gets masker 
     r = 2 * rand;
     if r <= 1
-        chosen = 'Speaker 1';
-        player.wave = new_target;
-        player.masker = new_masker;
+        chosen = 'ONE';
     else 
-        chosen = 'Speaker 2';
-        player.masker = new_target;
-        player.wave = new_masker;
+        chosen = 'TWO';
     end 
     %store target speaker 
     speaker = list{'Stimulus'}{'speaker'};
     speaker{counter} = chosen;
     list{'Stimulus'}{'speaker'} = speaker;
     
-    %play stimuli in correct speakers  
-    player.preparetoPlay;
-    player.play;
-
+    %Create string to send to serial port
+    data = ['START.', num2str(hd.loFreq), '.', num2str(hd.hiFreq), '.', ...
+        num2str(coh_list(counter)), '.', visualModes{counter}, '.', ...
+        chosen, '.STOP'];
+    
+    fprintf(s, data);
+    
+    %Play stimulus
+    fprintf(s, 'go');
+      
     %log stimulus timestamps 
     stim_start = list{'Timestamps'}{'stim_start'};
     stim_start(counter) = GetSecs;
     list{'Timestamps'}{'stim_start'} = stim_start;
-    
-    %store waveforms
-    waveforms = list{'Stimulus'}{'waveforms'};
-    waveforms{counter} = waveform;
-    list{'Stimulus'}{'waveforms'} = waveforms;
-    maskers = list{'Stimulus'}{'masker'};
-    maskers{counter} = masker_waveform;
-    list{'Stimulus'}{'masker'} = maskers;
-
-    %store frequency data 
-    freq = list{'Stimulus'}{'freq'};
-    freq{counter} = f;
-    list{'Stimulus'}{'freq'} = freq;
-    
-    isH = list{'Stimulus'}{'isH'};
-    isH(counter) = h;
-    list{'Stimulus'}{'isH'} = isH;
 end 

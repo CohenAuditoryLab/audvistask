@@ -6,7 +6,7 @@ close all;
 topsDataLog.flushAllData();
 
 %dispInd = 0 for small screen, 1 for full screen, >1 for external monitors
-[task, list] = AudVisTask_v3(1); 
+[task, list] = AudVisTask_v3(0); 
 task.run();
 
 %Post-Processing 
@@ -23,19 +23,14 @@ meta_data.hiFreq = hd.hiFreq;
 meta_data.toneDur = hd.toneDur;
 meta_data.trialDur = hd.trialDur;
 meta_data.fs = hd.fs;
+meta_data.delay = hd.delay;
 nTrials = list{'Counter'}{'trial'};
 meta_data.nTrials = nTrials;
 
 % trial data 
 visualModes = list{'control'}{'visualModes'};
 cohLevels = list{'control'}{'cohLevels'};
-coh_played = list{'Stimulus'}{'coh_played'};
 speaker = list{'Stimulus'}{'speaker'};
-isH = list{'Stimulus'}{'isH'};
-isH_played = list{'Stimulus'}{'isH_played'};
-numTones_played = list{'Stimulus'}{'numTones_played'};
-waveforms = list{'Stimulus'}{'waveforms'};
-maskers = list{'Stimulus'}{'masker'};
 stimStart = list{'Timestamps'}{'stim_start'};
 stimStop = list{'Timestamps'}{'stim_stop'};
 responseTimeStamp = list{'Timestamps'}{'choices'};
@@ -44,30 +39,14 @@ success = list{'Input'}{'corrects'};
 rt = list{'Input'}{'RT'};
 
 %matlab data table that includes waveform
-data_table_stim = table((1:nTrials)', visualModes,cohLevels,coh_played,speaker,....
-    numTones_played,waveforms,maskers,isH,isH_played,choices,success,stimStart,...
-    stimStop,responseTimeStamp,rt,'VariableNames',{'trialID','visualMode',...
-    'cohLevel','coh_played','speaker','numTones_played','waveform','masker','isH',...
-    'isH_played','choice','success','stimStartTime','stimStopTime',...
-    'responseTimeStamps','RT'});
-%csv file that does not include waveform
-data_table_nostim = table((1:nTrials)',visualModes,cohLevels,coh_played,speaker,...
-    numTones_played,isH,isH_played,choices,success,stimStart,...
-    stimStop,responseTimeStamp,rt,'VariableNames',{'trialID','visualMode',...
-    'cohLevel','coh_played','speaker','numTones_played','isHigh',...
-    'playedHigh','choice','success','stimStartTime','stimStopTime',...
-    'responseTimeStamps','RT'});
-%csv file for DDM code - only includes specified columns
-data_table_ddm = table(coh_played, choices - 1, rt, success);
+task_table = table((1:nTrials)', visualModes,cohLevels, speaker,....
+   choices,success,stimStart,stimStop,responseTimeStamp,rt,'VariableNames',...
+   {'trialID','visualMode','cohLevel','speaker','choice','success',...
+   'stimStartTime','stimStopTime','responseTimeStamps','RT'});
 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %save matlab data table (to keep track of waveform)
-save([data_folder save_filename '_table.mat'], 'data_table_stim', 'meta_data');
-%save csv file with all data except waveform
-writetable(data_table_nostim, strcat(save_filename,'.csv'));
-%save csv file for DDM (column 1 - coherence from 0 to 1, column 2 - choice
-%minus 1, column 3 - RT in ms) 
-writetable(data_table_ddm, strcat('DDM_', save_filename, '.csv'));
+save([data_folder save_filename '_table.mat'], 'task_table', 'meta_data');
 
 %clear again
 clear

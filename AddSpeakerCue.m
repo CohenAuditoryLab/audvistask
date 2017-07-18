@@ -15,7 +15,7 @@ aburst = zeros(1, 3*samples);
 vcue = [aburst, vburst, aburst, vburst, aburst, vburst];
 acue = zeros(1, length(vcue));
 
-%create 500ms delay
+%create 1000ms delay
 delay = 1000; %ms
 sampDelay = floor(delay / 1000 * samplingFreq);
 delayvec = zeros(1, sampDelay);
