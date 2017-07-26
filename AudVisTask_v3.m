@@ -36,7 +36,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes
 block_size = 3; 
 % number of trials per visual mode
-block_rep = 125; %1 %15 %50 %75
+block_rep = 1; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'Low', 'High', 'None'}; %, 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 
@@ -49,7 +49,7 @@ taskConditions.addParameter(vis_parameter, vis_vals);
 likesVisMode = topsFoundation();
 taskConditions.addAssignment('visualMode', likesVisMode, '.', 'name');
 
-nTrials = block_rep * (block_size+1);
+nTrials = block_rep * block_size;
 visualModes = cell(nTrials, 1);
 %select each visual mode once in a random order
 %each mode will only be selected once per trial
@@ -114,7 +114,9 @@ list{'Input'}{'responseWindow'} = responsewindow;
 
 % OPEN SERIAL PORT CONNECTION TO PC
 delete(instrfindall);
-s = serial('/dev/tty.KeySerial1');
+s = serial('/dev/tty.usbserial', 'BaudRate', 9600, 'DataBits', 8, ...
+    'Parity', 'None', 'StopBits', 1, 'FlowControl', 'None', 'Terminator',...
+    'LF');
 fopen(s);
 
 %% Time Variables
@@ -364,8 +366,8 @@ list{'control'}{'prepareMachine'} = prepareMachine;
 % State Machine - used in maintask
 mainMachine = topsStateMachine();
 mainStates = {'name', 'entry', 'input', 'exit', 'timeout', 'next';
-    'CheckReady', {@startTrial list block_rep}, {}, {@waitForCheckKey list}, 0, 'Stimulus';
-    'Stimulus', {@playstim list}, {}, {@waitForChoiceKey list}, 0, 'Feedback';
+    'CheckReady', {@startTrial list block_rep s}, {}, {@waitForCheckKey list}, 0, 'Stimulus';
+    'Stimulus', {@playstim list s}, {}, {@waitForChoiceKey list s}, 0, 'Feedback';
     'Feedback', {@showFeedback list}, {}, {}, 0, 'Exit';
     'Exit',{@finishTrial list}, {}, {}, iti,''};
 mainMachine.addMultipleStates(mainStates);
@@ -446,11 +448,14 @@ function startEndTask(list, s)
     ensemble.setObjectProperty('isVisible', true, ready2);
     ensemble.setObjectProperty('isVisible', true, button2);
     
+    %send cue to break outer while loop
+    fprintf(s, 'done');
+    
     %close serial port
     fclose(s);
 end
 
-function startTrial(list, block_rep)
+function startTrial(list, block_rep, s)
     %clear last trial data
     ui = list{'Input'}{'controller'};
     ui.flushData();
@@ -468,6 +473,30 @@ function startTrial(list, block_rep)
     
     ensemble.setObjectProperty('isVisible', false, block);
     
+    coh_list = list{'control'}{'cohLevels'};
+    visualModes = list{'control'}{'visualModes'};
+    hd = list{'Stimulus'}{'header'};
+    
+    %decide which speaker gets target and which gets masker 
+    r = 2 * rand;
+    if r <= 1
+        chosen = 'ONE';
+    else 
+        chosen = 'TWO';
+    end 
+    %store target speaker 
+    speaker = list{'Stimulus'}{'speaker'};
+    speaker{counter} = chosen;
+    list{'Stimulus'}{'speaker'} = speaker;
+    
+    %Create string to send to serial port
+    data = ['START.', num2str(hd.loFreq), '.', num2str(hd.hiFreq), '.', ...
+        num2str(coh_list(counter) * 100), '.', visualModes{counter}, '.', ...
+        chosen, '.STOP\n'];
+    
+    fprintf(s, data);   
+    
+    %Start adding things to the screen
     b = int16(ceil((counter/block_rep)));
     block = dotsDrawableText();
     block.string = sprintf('Block %d of 3', b);
@@ -515,7 +544,7 @@ function showFeedback(list)
     list{'Input'}{'corrects'} = isCorrect;
 end
 
-function string = waitForChoiceKey(list)
+function string = waitForChoiceKey(list, s)
     %Get list items
     counter = list{'Counter'}{'trial'};
     ensemble = list{'Graphics'}{'ensemble'};
@@ -525,6 +554,7 @@ function string = waitForChoiceKey(list)
     stim_start = list{'Timestamps'}{'stim_start'};
     responsewindow = list{'Input'}{'responseWindow'};
     choices = list{'Input'}{'choices'};
+    coh_list = list{'control'}{'cohLevels'};
 
     %clear existing data 
     ui.flushData 
@@ -538,7 +568,7 @@ function string = waitForChoiceKey(list)
     while ~strcmp(press, 'left') && ~strcmp(press, 'right')
         %Break loop if responsewindow time expires and move to next trial
         if toc > responsewindow 
-           	fprintf(s, 'no');
+           	fprintf(s, '%s\n', 'no');
             choice = NaN;
             timestamp = NaN;
             break
@@ -556,7 +586,7 @@ function string = waitForChoiceKey(list)
             %stop the stimulus once a response is detected 
             %avoid error by only stopping if left or right is pressed
             if ~strcmp(events{counter}, 'continue')
-                fprintf(s, 'no');
+                fprintf(s, '%s\n', 'no');
             end
 
             %get the timestamp of the stimulus stop time 
@@ -577,12 +607,15 @@ function string = waitForChoiceKey(list)
 
         %calculate reaction time 
         rt = (timestamp - stim_start(counter)) * 1000; %ms
-        delay = hd.delay; %ms
+        delay = hd.delay * 1000; %ms
         rt = rt - delay;
+        if rt <= 0 
+            rt = 0;
+        end 
         %record current choice 
         cur_choice = press{1};
     else 
-        rt = NaN;
+        rt = 4000;
         cur_choice = NaN;
     end 
 
@@ -602,7 +635,7 @@ function string = waitForChoiceKey(list)
         ensemble.setObjectProperty('xCenter', -5, target);
     elseif isempty(press)
         choice = NaN;
-        if isH(counter)
+        if (coh_list(counter) > 0.50)
             ensemble.setObjectProperty('xCenter', -5, target);
         else 
             ensemble.setObjectProperty('xCenter', 5, target);
@@ -658,34 +691,12 @@ function waitForCheckKey(list)
     end 
 end 
 
-function playstim(list) 
+function playstim(list, s) 
     %Add current iteration to counter 
     counter = list{'Counter'}{'trial'};
-    coh_list = list{'control'}{'cohLevels'};
-    visualModes = list{'control'}{'visualModes'};
-    hd = list{'Stimulus'}{'header'};
-    
-    %decide which speaker gets target and which gets masker 
-    r = 2 * rand;
-    if r <= 1
-        chosen = 'ONE';
-    else 
-        chosen = 'TWO';
-    end 
-    %store target speaker 
-    speaker = list{'Stimulus'}{'speaker'};
-    speaker{counter} = chosen;
-    list{'Stimulus'}{'speaker'} = speaker;
-    
-    %Create string to send to serial port
-    data = ['START.', num2str(hd.loFreq), '.', num2str(hd.hiFreq), '.', ...
-        num2str(coh_list(counter)), '.', visualModes{counter}, '.', ...
-        chosen, '.STOP'];
-    
-    fprintf(s, data);
     
     %Play stimulus
-    fprintf(s, 'go');
+    fprintf(s, '%s\n', 'go');
       
     %log stimulus timestamps 
     stim_start = list{'Timestamps'}{'stim_start'};
