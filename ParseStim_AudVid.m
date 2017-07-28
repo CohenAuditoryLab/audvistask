@@ -2,7 +2,7 @@ function ParseStim_AudVid
 %% Set Up RX6 and ActiveX Control
 
 % set location of RCXfile
-RCXFile = fullfile('C:\','work','AudVis_Task','AudVis_Circuit.rcx');
+RCXFile = fullfile('AudVis_Circuit.rcx');
 
 % setup connection with TDT
 RP = actxcontrol('RPco.x',[5 5 26 26]);
@@ -37,7 +37,7 @@ s = serial('COM1', 'BaudRate', 9600, 'DataBits', 8, 'Parity', 'None',...
 fopen(s);
 
 % set up data structures to store stimulus info
-nTrials = 3;
+nTrials = str2double(input('Number of trials: ', 's'));
 waveforms = cell(nTrials,1);
 maskers = cell(nTrials,1);
 freq = cell(nTrials,1);
@@ -103,21 +103,23 @@ while sessionRun == 1
     % LOAD stimuli to speakers/LEDs
     % if the first speaker is the target
     if strcmp(spk, 'ONE')
-        %RP.WriteTagVEX('datain1', 0, 'F32', new_target(1,:));
+        RP.WriteTagVEX('datain1', 0, 'F32', new_target(1,:));
         RP.WriteTagVEX('lightin1', 0, 'F32', new_target(2,:));
-        %RP.WriteTagVEX('datain2', 0, 'F32', new_masker(1,:));
+        RP.WriteTagVEX('datain2', 0, 'F32', new_masker(1,:));
         RP.WriteTagVEX('lightin2', 0, 'F32', new_masker(2,:));
         drawnow;
     end
     % if the second speaker is the target
     if strcmp(spk, 'TWO')
-        %RP.WriteTagVEX('datain1', 0, 'F32', new_masker(1,:));
+        RP.WriteTagVEX('datain1', 0, 'F32', new_masker(1,:));
         RP.WriteTagVEX('lightin1', 0, 'F32', new_masker(2,:));
-        %RP.WriteTagVEX('datain2', 0, 'F32', new_target(1,:));
+        RP.WriteTagVEX('datain2', 0, 'F32', new_target(1,:));
         RP.WriteTagVEX('lightin2', 0, 'F32', new_target(2,:));
         drawnow;
     end
     
+    %tell Mac when loading is done
+    fprintf(s, '%s\n', '1');
     disp('Stimuli loaded!');
     
     abortFlag = findTrialStart;
@@ -151,7 +153,7 @@ fclose(s);
 
 stim_table = table((1:nTrials)', waveforms, maskers, freq, isH, 'VariableNames',...
     {'trial', 'waveform','masker','tone_frequencies','isHigh'});
-data_folder = fullfile('C:', 'work', 'AudVis_Task', 'StimData');
+data_folder = fullfile('C:', 'Users', 'Brianna', 'Documents', 'MATLAB', 'StimData');
 c = clock;
 save_filename = ['Stimulus_Data_', num2str(c(1)), num2str(c(2)), ...
     num2str(c(3)), '_', num2str(c(4)), num2str(c(5))];
