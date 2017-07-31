@@ -120,7 +120,7 @@ for jj = 1:length(i)
         visual = visual(1:length(vis(i(jj) : ind_end)));
     end
     auditory = auditory + aud(i(jj) : ind_end);
-    aud(i(jj) : ind_end) = 0.015 .* auditory;
+    aud(i(jj) : ind_end) = auditory;
     vis(i(jj) : ind_end) = visual;
     
     frequencies(i(jj) : ind_end, :) = freq;
