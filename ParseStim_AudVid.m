@@ -2,8 +2,12 @@ function ParseStim_AudVid
 %% Set Up RX6 and ActiveX Control
 
 % set location of RCXfile
+<<<<<<< HEAD
+RCXFile = fullfile('AudVis_Circuit.rcx');
+=======
 RCXFile = fullfile('C:', 'Users', 'Brianna', 'Documents', 'MATLAB',...
     'AudVis_Task', 'AudVis_Circuit.rcx');
+>>>>>>> e38de4dc52cf2ea046e10fe76dd5728f52ae1fd1
 
 % setup connection with TDT
 RP = actxcontrol('RPco.x',[5 5 26 26]);
@@ -49,7 +53,10 @@ counter = 1;
 
 sessionRun = 1;
 quitNow = 0;
+<<<<<<< HEAD
+=======
 paramFlag = 0;
+>>>>>>> e38de4dc52cf2ea046e10fe76dd5728f52ae1fd1
 
 disp('===================== Start of Session ========================');
 while sessionRun == 1
@@ -109,6 +116,7 @@ while sessionRun == 1
         RP.WriteTagVEX('lightin1', 0, 'F32', new_target(2,:));
         RP.WriteTagVEX('datain2', 0, 'F32', new_masker(1,:));
         RP.WriteTagVEX('lightin2', 0, 'F32', new_masker(2,:));
+        drawnow;
     end
     % if the second speaker is the target
     if strcmp(spk, 'TWO')
@@ -116,6 +124,7 @@ while sessionRun == 1
         RP.WriteTagVEX('lightin1', 0, 'F32', new_masker(2,:));
         RP.WriteTagVEX('datain2', 0, 'F32', new_target(1,:));
         RP.WriteTagVEX('lightin2', 0, 'F32', new_target(2,:));
+        drawnow;
     end
     
     %tell Mac when loading is done
@@ -128,6 +137,10 @@ while sessionRun == 1
         % Play the stimulus
         RP.SoftTrg(1); %Ch1
         RP.SoftTrg(3); %Ch2
+<<<<<<< HEAD
+        drawnow;
+=======
+>>>>>>> e38de4dc52cf2ea046e10fe76dd5728f52ae1fd1
     end
     
     % If you receive the stop stimulus
@@ -137,6 +150,10 @@ while sessionRun == 1
         disp('Aborting Trial');
         RP.SoftTrg(2); %Ch1
         RP.SoftTrg(4); %Ch2
+<<<<<<< HEAD
+        drawnow;
+=======
+>>>>>>> e38de4dc52cf2ea046e10fe76dd5728f52ae1fd1
         counter = counter + 1;
         continue;
     end
@@ -152,9 +169,15 @@ fclose(s);
 stim_table = table((1:nTrials)', waveforms, maskers, freq, isH, 'VariableNames',...
     {'trial', 'waveform','masker','tone_frequencies','isHigh'});
 data_folder = fullfile('C:', 'Users', 'Brianna', 'Documents', 'MATLAB', 'StimData');
+<<<<<<< HEAD
+c = clock;
+save_filename = ['Stimulus_Data_', num2str(c(1)), num2str(c(2)), ...
+    num2str(c(3)), '_', num2str(c(4)), num2str(c(5))];
+=======
 
 save_filename = ['Stimulus_Data_', datestr(now, 'yyyymmdd'), '_', ...
     datestr(now, 'HHMM')];
+>>>>>>> e38de4dc52cf2ea046e10fe76dd5728f52ae1fd1
 save([data_folder filesep save_filename '_table.mat'], 'stim_table');
 
 %% Helper function for parsing data
@@ -198,4 +221,8 @@ save([data_folder filesep save_filename '_table.mat'], 'stim_table');
             end
         end
     end
+<<<<<<< HEAD
 end
+=======
+end
+>>>>>>> e38de4dc52cf2ea046e10fe76dd5728f52ae1fd1
