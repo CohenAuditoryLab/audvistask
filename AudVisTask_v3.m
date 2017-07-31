@@ -2,6 +2,9 @@ function [task, list] = AudVisTask_v3(dispInd)
 %% 05-22-2017 created by Brianna - Auditory Visual Task
 %%Using VisualTones2, Create Stimulus, AddSpeakerCue
 %%Sending triggers to ActiveX on PC using Serial Port
+%%Stimuli are produced and saved on PC while all task controls are executed
+%%here
+%%Responses and timing occurs on Mac 
 %% Setting up the screen
 
 isClient = false;
@@ -36,7 +39,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes
 block_size = 3; 
 % number of trials per visual mode
-block_rep = 1; %1 %15 %50 %75
+block_rep = 10; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'Low', 'High', 'None'}; %, 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 
@@ -249,7 +252,7 @@ blocklabel.isVisible = false;
 blocklabel.y = 5.5;
 
 readyprompt1 = dotsDrawableText();
-readyprompt1.string = 'This task will consist of 4 blocks.';
+readyprompt1.string = 'This task will consist of 3 blocks.';
 readyprompt1.fontSize = 32;
 readyprompt1.typefaceName = 'Calibri';
 readyprompt1.y = 4;
@@ -269,7 +272,7 @@ readyprompt.typefaceName = 'Calibri';
 readyprompt.isVisible = true;
 
 infoprompt = dotsDrawableText();
-infoprompt.string = 'Use A to play each sound and L or R to respond.';
+infoprompt.string = 'Press A to play each sound and L or R to respond.';
 infoprompt.fontSize = 24;
 infoprompt.typefaceName = 'Calibri';
 infoprompt.y = -2;
@@ -464,14 +467,6 @@ function startTrial(list, block_rep, s)
     counter = list{'Counter'}{'trial'};
     counter = counter + 1;
     list{'Counter'}{'trial'} = counter;
-
-    %set high and low labels to be visible 
-    ensemble = list{'Graphics'}{'ensemble'};
-    low = list{'Graphics'}{'low'};
-    high = list{'Graphics'}{'high'};
-    block = list{'Graphics'}{'block'};
-    
-    ensemble.setObjectProperty('isVisible', false, block);
     
     coh_list = list{'control'}{'cohLevels'};
     visualModes = list{'control'}{'visualModes'};
@@ -495,6 +490,20 @@ function startTrial(list, block_rep, s)
         chosen, '.STOP\n'];
     
     fprintf(s, data);   
+
+    %set high and low labels to be visible 
+    ensemble = list{'Graphics'}{'ensemble'};
+    low = list{'Graphics'}{'low'};
+    high = list{'Graphics'}{'high'};
+    block = list{'Graphics'}{'block'};
+    
+    ensemble.setObjectProperty('isVisible', false, block);
+   
+    %Wait for cue that data was received 
+    cue = '';
+    while length(cue) < 1
+        cue = fscanf(s, '%s');
+    end 
     
     %Start adding things to the screen
     b = int16(ceil((counter/block_rep)));
@@ -610,12 +619,12 @@ function string = waitForChoiceKey(list, s)
         delay = hd.delay * 1000; %ms
         rt = rt - delay;
         if rt <= 0 
-            rt = 0;
+            rt = NaN;
         end 
         %record current choice 
         cur_choice = press{1};
     else 
-        rt = 4000;
+        rt = NaN;
         cur_choice = NaN;
     end 
 
@@ -697,7 +706,7 @@ function playstim(list, s)
     
     %Play stimulus
     fprintf(s, '%s\n', 'go');
-      
+    
     %log stimulus timestamps 
     stim_start = list{'Timestamps'}{'stim_start'};
     stim_start(counter) = GetSecs;

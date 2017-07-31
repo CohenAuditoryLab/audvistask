@@ -46,7 +46,7 @@ for j = 1:nTrials
     
     %convert reaction time to number of samples
     samples = floor(rt(j) / 1000 * fs);
-    %if ~isnan(samples)
+    if ~isnan(samples)
         %get frequencies corresponding to played samples
         curFreq = freq{j};
         playedFreq = curFreq(1:samples);
@@ -59,11 +59,11 @@ for j = 1:nTrials
         numTones_played(j) = numTones;
         coh_played(j) = numHi/numTones;
         isH_played(j) = numHi > numLo;
-%     else 
-%         numTones_played(j) = NaN;
-%         coh_played(j) = NaN;
-%         isH_played(j) = NaN;
-%     end
+    else 
+        numTones_played(j) = NaN;
+        coh_played(j) = NaN;
+        isH_played(j) = NaN;
+    end
 end
 
 %% Create one final data file and data file for DDM
@@ -90,7 +90,7 @@ all_data = table((1:nTrials)', visualModes, cohLevels, coh_played,....
     'isH_played','choice','success','stimStartTime','stimStopTime',...
     'responseTimeStamps','RT'});
 %csv file for DDM code - only includes specific columns
-ddm_data = table(coh_played, choices - 1, rt, success);
+ddm_data = [coh_played, choices - 1, rt, success];
 
 %save matlab data table
 save([data_folder save_filename '.mat'], 'all_data', 'meta_data');
