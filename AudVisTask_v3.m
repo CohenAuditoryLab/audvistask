@@ -34,12 +34,12 @@ list{'meta'}{'time'} = cur_time;
 list{'meta'}{'task'} = cur_task;
 list{'meta'}{'saveFilename'} = save_filename;
 
-%% Settings for generating the sequence of conditions
+%% Settings for generating they sequence of conditions
 
 % number visual modes
 block_size = 3; 
 % number of trials per visual mode
-block_rep = 10; %1 %15 %50 %75
+block_rep = 130; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'Low', 'High', 'None'}; %, 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 
@@ -246,7 +246,7 @@ highlabel.y = 3;
 
 %Block Label (top)
 blocklabel = dotsDrawableText();
-blocklabel.string = sprintf('Block Number 1 of 4');
+blocklabel.string = sprintf('Block Number 1 of 3');
 blocklabel.typefaceName = 'Calibri';
 blocklabel.isVisible = false;
 blocklabel.y = 5.5;
@@ -286,7 +286,7 @@ buttonprompt.y = -4;
 buttonprompt.isVisible = true;
 
 readyprompt2 = dotsDrawableText();
-readyprompt2.string = 'Congratulations! Your performance is ';
+readyprompt2.string = 'Congratulations! You have completed the session.';
 readyprompt2.fontSize = 30;
 readyprompt2.typefaceName = 'Calibri';
 readyprompt2.isVisible = false;
@@ -435,16 +435,11 @@ function startEndTask(list, s)
     ensemble.setObjectProperty('isVisible', false, low);
     ensemble.setObjectProperty('isVisible', false, high);
     ensemble.setObjectProperty('isVisible', false, block);
-    
-    corrects = list{'Input'}{'corrects'};
-    %calculate performance
-    perf = 100*sum(corrects)/length(corrects);
 
     %prepare text + performance
     ready2 = list{'Graphics'}{'ready2'};
     button2 = list{'Graphics'}{'button2'};
     tmp_str = ensemble.getObjectProperty('string', ready2);
-    tmp_str = [tmp_str num2str(perf) ' %'];
     ensemble.setObjectProperty('string', tmp_str, ready2);
 
     %make visible
