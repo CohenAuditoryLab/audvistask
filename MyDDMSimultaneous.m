@@ -12,9 +12,10 @@ close all
 %cd into file that holds data
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-PopBehavior = load('DDM_AudVisTask_v3_Jaejin_170629_1544.mat'); %block size 100
-Headings = load('AudVisTask_v3_Jaejin_170629_1544_table.mat');
-h = Headings.all_data(:, 2);
+subj = 'BriannaTest_170731';
+PopBehavior = load('DDM_All_Data_BriannaTest_170731.mat'); %block size 10
+Headings = load('AudVisTask_v3_BriannaTest_170731_0935_table.mat');
+h = Headings.task_table(:, 2);
 
 %extract block visual modes from matrix
 try
@@ -34,7 +35,7 @@ catch ME
     causeException = MException('MATLAB:myCode:dimensions',msg);
     ME = addCause(ME,causeException);
     rethrow(ME);
-end 
+end
 
 %coherence bins
 cbins = [ ...
@@ -75,6 +76,7 @@ if num_blocks > 4
 end
 
 %set data to variable
+PopBehavior = PopBehavior.ddm_data;
 Behavior1 = PopBehavior(1:block_size, :);
 Behavior2 = PopBehavior(block_size+1:2*block_size, :);
 Behavior3 = PopBehavior(2*block_size+1:3*block_size, :);
@@ -432,12 +434,11 @@ Xub = [50000 50000 50000 2000 2000 50000 50000 2000 2000 50000, ...
     50000 2000 2000 50000 50000 2000 2000 50000 50000 2000 2000];
 
 [fits_B,err_B] = patternsearch(@(fitt)fitBK_err_constBoundB(fitt, ...
-    data_all, [lapse1, lapse2, lapse3, lapse4, lapse5]), ...
-    X0, [], [], [], [], Xlb, Xub, [], optimset('Algorithm', 'active-set', ...
-    'MaxIter', 30000, 'MaxFunEvals', 30000));
+    data_all, lapse), X0, [], [], [], [], Xlb, Xub, [], ...
+    optimset('Algorithm', 'active-set', 'MaxIter', 30000, 'MaxFunEvals', 30000));
 [fits_B2, err_B2] = fmincon(@(fitt)fitBK_err_constBoundB(fitt, data_all, ...
-    [lapse1, lapse2, lapse3, lapse4, lapse5]), X0, [], [], [], [], ...
-    Xlb, Xub, [], optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
+    lapse), X0, [], [], [], [], Xlb, Xub, [], ...
+    optimset('Algorithm', 'active-set', 'MaxIter', 30000, ...
     'MaxFunEvals', 40000));
 
 % save the best fit between the two methods
@@ -449,13 +450,15 @@ end
 %% Determine the best of the models
 %use BIC or AIC to determine the best fit model
 
-% err_indep = -10000000000;
+% err_indep = -100000000000000;
 % err_AB = -100000000;
 % err_mu = -100000000;
+% err_A = -100000000;
+% err_B = -100000000;
 
 %%%BIC is "harsher" on free parameters than AIC
-errors = [err_indep, err_mu, err_AB, err_A]; %, err_B];
-[aic, bic] = aicbic(errors, [5, 4, 3, 4], block_size .* ones(length(errors),1));
+errors = [err_indep, err_mu, err_AB, err_A, err_B];
+[aic, bic] = aicbic(errors, [5, 4, 3, 4, 4], block_size .* ones(length(errors),1));
 [~, index] = min(aic);
 
 if index == 1
@@ -518,45 +521,45 @@ elseif index == 3
     
     t = 'Constant Both Bounds';
 elseif index == 4
-        M = repmat(cfax', 1, 5);
-        [ps, rts] = fitBK_val_constBoundA4L(M, fits_A, [lapse1, lapse2, lapse3, ...
-            lapse4, lapse5]);
+    M = repmat(cfax', 1, 5);
+    [ps, rts] = fitBK_val_constBoundA4L(M, fits_A, [lapse1, lapse2, lapse3, ...
+        lapse4, lapse5]);
     
-        ps1 = ps(:, 1);
-        ps2 = ps(:, 2);
-        ps3 = ps(:, 3);
-        ps4 = ps(:, 4);
-        ps5 = ps(:, 5);
+    ps1 = ps(:, 1);
+    ps2 = ps(:, 2);
+    ps3 = ps(:, 3);
+    ps4 = ps(:, 4);
+    ps5 = ps(:, 5);
     
-        rts1 = rts(:, 1);
-        rts2 = rts(:, 2);
-        rts3 = rts(:, 3);
-        rts4 = rts(:, 4);
-        rts5 = rts(:, 5);
+    rts1 = rts(:, 1);
+    rts2 = rts(:, 2);
+    rts3 = rts(:, 3);
+    rts4 = rts(:, 4);
+    rts5 = rts(:, 5);
     
-        t = 'Constant Bound A';
+    t = 'Constant Bound A';
 elseif index == 5
-        M = repmat(cfax', 1, 5);
-        [ps, rts] = fitBK_val_constBoundB4L(M, fits_B, [lapse1, lapse2, lapse3, ...
-            lapse4, lapse5]);
+    M = repmat(cfax', 1, 5);
+    [ps, rts] = fitBK_val_constBoundB4L(M, fits_B, [lapse1, lapse2, lapse3, ...
+        lapse4, lapse5]);
     
-        ps1 = ps(:, 1);
-        ps2 = ps(:, 2);
-        ps3 = ps(:, 3);
-        ps4 = ps(:, 4);
-        ps5 = ps(:, 5);
+    ps1 = ps(:, 1);
+    ps2 = ps(:, 2);
+    ps3 = ps(:, 3);
+    ps4 = ps(:, 4);
+    ps5 = ps(:, 5);
     
-        rts1 = rts(:, 1);
-        rts2 = rts(:, 2);
-        rts3 = rts(:, 3);
-        rts4 = rts(:, 4);
-        rts5 = rts(:, 5);
+    rts1 = rts(:, 1);
+    rts2 = rts(:, 2);
+    rts3 = rts(:, 3);
+    rts4 = rts(:, 4);
+    rts5 = rts(:, 5);
     
-        t = 'Constant Bound B';
+    t = 'Constant Bound B';
 end
 %% PLOTZ
 
-figure()
+f = figure();
 subplot(3,1,1); cla reset; hold on;
 %%%block 1
 plot(cax1, pmf1, 'k.', 'MarkerSize', 12);
@@ -690,7 +693,7 @@ if index == 1
     legend(visuals, blocks)
     
     %CONSTANT DRIFT
-elseif index == 2    
+elseif index == 2
     %Horizontal shifts of these lines imply changes in the mean rate-of-rise
     %swivels about a fixed point at infinite RT imply changes in the bound height
     subplot(3,1,2); cla reset; hold on;
@@ -724,7 +727,7 @@ elseif index == 2
         plot([-100 0], fits_mu([17 17]), 'g--');
         
         graphics = [graphics g4];
-    end 
+    end
     if num_blocks > 4
         %%%block5
         plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
@@ -734,7 +737,7 @@ elseif index == 2
         plot([-100 0], fits_mu([21 21]), 'm--');
         
         graphics = [graphics g5];
-    end 
+    end
     
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Response time (ms)')
@@ -767,7 +770,7 @@ elseif index == 2
         
         vis = [vis v5];
     end
-
+    
     xlabel('Coherence (%): +100 means all high tones')
     ylabel('Decision time (ms): RT-nonDT')
     legend(vis,blocks)
@@ -808,7 +811,7 @@ elseif index == 3
         plot([-100 0], fits_AB([14 14]), 'g--');
         
         g = [g g4];
-    end 
+    end
     if num_blocks > 4
         %%%block5
         plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
@@ -891,7 +894,7 @@ elseif index == 4
         plot([-100 0], fits_A([17 17]), 'g--');
         
         g = [g g4];
-    end 
+    end
     if num_blocks > 4
         %%%block5
         plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
@@ -939,9 +942,88 @@ elseif index == 4
     ylabel('Decision time (ms): RT-nonDT')
     legend(v,blocks)
     
-elseif index == 5 
-        
+elseif index == 5
     
+    %%%block 1
+    plot(cax1(cax1>=0), cmf1(cax1>=0,1), 'k.', 'MarkerSize', 12);
+    plot(cax1(cax1<=0), cmf1(cax1<=0,2), 'k.', 'MarkerSize', 12);
+    g1 = plot(cfax, rts1', 'k-', 'LineWidth', 0.75);
+    plot([0 100], fits_B([4 4]), 'k--');
+    plot([-100 0], fits_B([5 5]), 'k--');
+    %%%block 2
+    plot(cax2(cax2>=0), cmf2(cax2>=0,1), 'r.', 'MarkerSize', 12);
+    plot(cax2(cax2<=0), cmf2(cax2<=0,2), 'r.', 'MarkerSize', 12);
+    g2 = plot(cfax, rts2', 'r-', 'LineWidth', 0.75);
+    plot([0 100], fits_B([8 8]), 'r--');
+    plot([-100 0], fits_B([9 9]), 'r--');
+    %%%block 3
+    plot(cax3(cax3>=0), cmf3(cax3>=0,1), 'b.', 'MarkerSize', 12);
+    plot(cax3(cax3<=0), cmf3(cax3<=0,2), 'b.', 'MarkerSize', 12);
+    g3 = plot(cfax, rts3', 'b-', 'LineWidth', 0.75);
+    plot([0 100], fits_A([12 12]), 'b--');
+    plot([-100 0], fits_A([13 13]), 'b--');
+    
+    g = [g1 g2 g3];
+    
+    if num_blocks > 3
+        %%%block 4
+        plot(cax4(cax4>=0), cmf4(cax4>=0,1), 'g.', 'MarkerSize', 12);
+        plot(cax4(cax4<=0), cmf4(cax4<=0,2), 'g.', 'MarkerSize', 12);
+        g4 = plot(cfax, rts4', 'g-', 'LineWidth', 0.75);
+        plot([0 100], fits_A([16 16]), 'g--');
+        plot([-100 0], fits_A([17 17]), 'g--');
+        
+        g = [g g4];
+    end
+    if num_blocks > 4
+        %%%block5
+        plot(cax5(cax5>=0), cmf5(cax5>=0,1), 'm.', 'MarkerSize', 12);
+        plot(cax5(cax5<=0), cmf5(cax5<=0,2), 'm.', 'MarkerSize', 12);
+        g5 = plot(cfax, rts5', 'm-', 'LineWidth', 0.75);
+        plot([0 100], fits_A([20 20]), 'm--');
+        plot([-100 0], fits_A([21 21]), 'm--');
+        
+        g = [g g5];
+    end
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Response time (ms)')
+    legend(g, blocks)
+    
+    subplot(3,1,3); cla reset; hold on;
+    %%%block 1
+    plot(cfax(cfax<0), (rts1(cfax<0))'-fits_A(5), 'k-', 'LineWidth', 0.75);hold on;
+    v1 = plot(cfax(cfax>0), rts1(cfax>0)-fits_A(4), 'k-', 'LineWidth', 0.75);
+    %%%block 2
+    plot(cfax(cfax<0), (rts2(cfax<0))'-fits_A(9), 'r-', 'LineWidth', 0.75);hold on;
+    v2 = plot(cfax(cfax>0), rts2(cfax>0)-fits_A(8), 'r-', 'LineWidth', 0.75);
+    %%%block 3
+    plot(cfax(cfax<0), (rts3(cfax<0))'-fits_A(13), 'b-', 'LineWidth', 0.75);hold on;
+    v3 = plot(cfax(cfax>0), rts3(cfax>0)-fits_A(12), 'b-', 'LineWidth', 0.75);
+    
+    v = [v1 v2 v3];
+    
+    if num_blocks > 3
+        %%%block 4
+        plot(cfax(cfax<0), (rts4(cfax<0))'-fits_A(17), 'g-', 'LineWidth', 0.75);hold on;
+        v4 = plot(cfax(cfax>0), rts4(cfax>0)-fits_A(16), 'g-', 'LineWidth', 0.75);
+        
+        v = [v v4];
+    end
+    if num_blocks > 4
+        %%%block 5
+        plot(cfax(cfax<0), (rts5(cfax<0))'-fits_A(21), 'm-', 'LineWidth', 0.75);hold on;
+        v5 = plot(cfax(cfax>0), rts5(cfax>0)-fits_A(20), 'm-', 'LineWidth', 0.75);
+        
+        v = [v v5];
+    end
+    
+    xlabel('Coherence (%): +100 means all high tones')
+    ylabel('Decision time (ms): RT-nonDT')
+    legend(v,blocks)
 end
+
+cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
+saveas(f, ['bestfit_' subj '.png'])
 
 end
