@@ -2,8 +2,12 @@ function AudVis_PostProcess
 %% File selection
 
 % Select files
+disp('Select task data (mac)');
 [task_file, tpath] = uigetfile('*.mat', 'Task performance data');
+disp([tpath task_file]);
+disp('Select stimulus data (PC)');
 [stim_file, spath] = uigetfile('*.mat', 'Stimulus data');
+disp([spath stim_file]);
 
 % Load files
 load([tpath task_file]);
@@ -49,6 +53,9 @@ for j = 1:nTrials
     if ~isnan(samples)
         %get frequencies corresponding to played samples
         curFreq = freq{j};
+        if samples > length(curFreq)
+            samples = length(curFreq);
+        end
         playedFreq = curFreq(1:samples);
         numSamples = sum(playedFreq ~= 0);
         numTones = floor(numSamples / 1220);

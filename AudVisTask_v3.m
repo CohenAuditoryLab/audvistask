@@ -39,7 +39,7 @@ list{'meta'}{'saveFilename'} = save_filename;
 % number visual modes
 block_size = 3; 
 % number of trials per visual mode
-block_rep = 130; %1 %15 %50 %75
+block_rep = 100; %1 %15 %50 %75
 % possible visual values to select from
 vis_vals = {'Low', 'High', 'None'}; %, 'All'};  %{'None', 'Low', 'High', 'All', 'Random'};
 
@@ -103,7 +103,7 @@ list{'control'}{'cohLevels'} = cohLevels;
 %% Audio Settings
 
 hd.loFreq = 1000; %hz      312.5 |  625 | 1250 | 2500 |  5000
-hd.hiFreq = 2500; %hz     625   | 1250 | 2500 | 5000 | 10000
+hd.hiFreq = 2000; %hz     625   | 1250 | 2500 | 5000 | 10000
 hd.toneDur = 50; %ms
 hd.toneSOA = 10; %ms, actually poisson point process number centered around 10 
 hd.trialDur = 4000; %ms

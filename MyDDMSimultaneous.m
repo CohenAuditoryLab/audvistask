@@ -1,4 +1,4 @@
-function MyDDMSimultaneous(block_size, num_blocks)
+function MyDDMSimultaneous(block_size, num_blocks, varargin)
 %% Set up
 
 % Data File being used:
@@ -7,15 +7,23 @@ function MyDDMSimultaneous(block_size, num_blocks)
 % 3rd column: response time (sec)
 % 4th column: success of choice (1: correct, 0: incorrect)
 
+comment = '';
+
+if nargin > 2
+    comment = varargin{1};
+end
+
 close all
 
 %cd into file that holds data
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
 %load in data
-subj = 'BriannaTest_170731';
-PopBehavior = load('DDM_All_Data_BriannaTest_170731.mat'); %block size 10
-Headings = load('AudVisTask_v3_BriannaTest_170731_0935_table.mat');
-h = Headings.task_table(:, 2);
+
+PopBehavior = load('DDM_Combined_Data_BriannaBrianna_170802170803_170803.mat');
+Headings = load('Combined_Data_BriannaBrianna_170802170803_170803.mat');
+%if combined data change this to all_data instead of task_table
+h = Headings.all_data(:, 2);
+subj = [Headings.meta_data.subject '_' Headings.meta_data.date];
 
 %extract block visual modes from matrix
 try
@@ -451,10 +459,10 @@ end
 %use BIC or AIC to determine the best fit model
 
 % err_indep = -100000000000000;
-% err_AB = -100000000;
-% err_mu = -100000000;
-% err_A = -100000000;
-% err_B = -100000000;
+err_AB = -100000000;
+err_mu = -100000000;
+err_A = -100000000;
+err_B = -100000000;
 
 %%%BIC is "harsher" on free parameters than AIC
 errors = [err_indep, err_mu, err_AB, err_A, err_B];
@@ -1024,6 +1032,6 @@ elseif index == 5
 end
 
 cd ('/Users/briannakarpowicz/Documents/Cohen Lab/Auditory-Visual Task/Data/');
-saveas(f, ['bestfit_' subj '.png'])
+saveas(f, ['bestfit_' subj '_' comment '.png'])
 
 end
